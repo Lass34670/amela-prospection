@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#3B5B4A">
+<title>AMELA Prospection</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AMELA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Mise en page : une colonne pensée pour le téléphone, cartes claires sur fond crème, onglets en bas.
+     Le « parcours » en quatre points dorés revient sur chaque prospect : c'est le fil de A à Z. */
+  --bg: #F5F0EB;
+  --surface: #FFFFFF;
+  --surface-2: #ECE4D8;
+  --ink: #22302A;
+  --muted: #5F6A63;
+  --line: #DCD2C3;
+  --primary: #3B5B4A;
+  --on-primary: #FFFFFF;
+  --brand-bg: #3B5B4A;
+  --brand-ink: #F5F0EB;
+  --gold: #C8A96E;
+  --gold-ink: #765919;
+  --brand-accent: #C8A96E;
+  --on-gold: #2A2110;
+  --ok: #2B7550;
+  --warn: #9A630B;
+  --danger: #AD3B2B;
+  --shade: rgba(24, 32, 27, .5);
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'Jost', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%; font-variant-numeric: lining-nums; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--primary); }
+h1, h2, h3, p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; border-radius: 6px; }
+.top :focus-visible { outline-color: var(--brand-ink); }
+svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+#app { position: relative; height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+
+/* En-tête */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: var(--brand-bg); color: var(--brand-ink); flex: none; }
+.brand { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .14em; }
+.brand-sub { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--brand-accent); white-space: nowrap; }
+.sync { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(245, 240, 235, .35); background: transparent; color: var(--brand-ink); border-radius: 999px; padding: 5px 11px; font-size: 12.5px; min-height: 32px; white-space: nowrap; }
+.sync .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-accent); }
+.sync.cloud .dot { background: #7FD3A6; }
+
+/* Zone principale */
+#view { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 18px; }
+#view:focus { outline: none; }
+#view > *, .sheet-body > *, .dialog > * { flex-shrink: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold-ink); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.05; color: var(--primary); text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.15; color: var(--primary); text-wrap: balance; }
+h3 { font-size: 16px; font-weight: 600; line-height: 1.25; }
+.lede { color: var(--muted); font-size: 16px; max-width: 34em; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.count { font-size: 13px; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 13.5px; }
+
+/* Cartes */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.card.gold { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); }
+.card.soft { background: var(--surface-2); border-color: transparent; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.row.between { justify-content: space-between; }
+.grow { flex: 1; min-width: 0; }
+
+/* Boutons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: 11px; border: 1px solid var(--primary); background: var(--primary); color: var(--on-primary); font-weight: 500; text-decoration: none; text-align: center; line-height: 1.2; }
+.btn.ghost { background: transparent; color: var(--primary); border-color: var(--line); }
+.btn.goldb { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.btn.danger { background: transparent; color: var(--danger); border-color: var(--line); }
+.btn.sm { min-height: 38px; padding: 7px 12px; font-size: 14.5px; border-radius: 9px; }
+.btn.block { width: 100%; }
+.btn[disabled] { opacity: .55; cursor: default; }
+.linkbtn { background: none; border: 0; padding: 4px 0; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; font-size: 14.5px; min-height: 32px; }
+.fab { position: absolute; right: 16px; bottom: 76px; z-index: 5; box-shadow: 0 6px 18px rgba(20, 30, 24, .28); border-radius: 999px; padding: 12px 18px; }
+
+/* Onglets */
+.tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); }
+.tabs a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 9px; font-size: 11.5px; color: var(--muted); text-decoration: none; border-top: 3px solid transparent; min-height: 58px; }
+.tabs a[aria-current="page"] { color: var(--primary); border-top-color: var(--gold); font-weight: 600; }
+.tabs a { position: relative; }
+.tabs .badge { position: absolute; top: 5px; left: 50%; margin-left: 5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--danger); color: #fff; font-size: 11px; line-height: 18px; text-align: center; font-weight: 600; }
+.tabs a span.lab { white-space: nowrap; }
+
+/* Le parcours */
+.rail { display: flex; align-items: center; gap: 0; }
+.rail i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); }
+.rail b { flex: 1; height: 2px; background: var(--line); }
+.rail i.done, .rail b.done { background: var(--gold); border-color: var(--gold); }
+.rail i.now { width: 14px; height: 14px; background: var(--primary); border: 3px solid var(--gold); }
+.rail.lost i, .rail.lost b { opacity: .45; }
+.funnel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 4px; }
+.funnel button { display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; padding: 6px 0; border-radius: 8px; min-height: 64px; }
+.funnel .n { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1; color: var(--primary); }
+.funnel .n.zero { color: var(--muted); opacity: .6; }
+.funnel .l { font-size: 12px; line-height: 1.2; color: var(--muted); text-align: center; overflow-wrap: break-word; }
+
+/* Chiffres */
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 10px 9px; }
+.kpi .n { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.05; color: var(--primary); font-variant-numeric: tabular-nums lining-nums; }
+.kpi .l { font-size: 12px; color: var(--muted); line-height: 1.25; }
+.bar { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--gold); border-radius: 4px; }
+
+/* Listes */
+.task, .pcard { display: flex; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; gap: 12px; align-items: center; }
+.pcard { flex-direction: column; align-items: stretch; gap: 8px; }
+.task .t-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.task .t-name, .pname { font-weight: 600; overflow-wrap: anywhere; }
+.task .t-what { font-size: 14.5px; color: var(--muted); }
+.task .t-when { font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--gold-ink); }
+.task.late { border-color: var(--danger); }
+.task.late .t-when { color: var(--danger); }
+.pmeta { font-size: 13.5px; color: var(--muted); }
+.pnext { font-size: 13.5px; color: var(--gold-ink); font-weight: 500; }
+.pnext.late { color: var(--danger); }
+.pnext.none { color: var(--muted); font-weight: 400; }
+.grade { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 26px; padding: 0 8px; border-radius: 8px; font-weight: 600; font-size: 13.5px; border: 1.5px solid currentColor; }
+.grade.A { color: var(--ok); }
+.grade.B { color: var(--gold-ink); }
+.grade.C { color: var(--muted); }
+.pill { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--surface-2); font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+.pill.lost { color: var(--muted); }
+.pill.new { background: var(--gold); color: var(--on-gold); font-weight: 600; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; min-height: 36px; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; color: var(--ink); white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.check { display: flex; gap: 10px; align-items: flex-start; }
+.check .box { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; color: transparent; margin-top: 1px; }
+.check.done .box { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.check.done .box svg { width: 14px; height: 14px; stroke-width: 2.4; }
+.check.done .txt { color: var(--muted); text-decoration: line-through; }
+.check button.txt { background: none; border: 0; padding: 0; text-align: left; text-decoration: underline; text-underline-offset: 3px; color: var(--ink); }
+
+/* Recommandations */
+.reco h3 { overflow-wrap: anywhere; }
+.why { display: flex; flex-direction: column; gap: 5px; font-size: 14.5px; }
+.why li { position: relative; padding-left: 16px; }
+.why li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+.tip { font-size: 14px; color: var(--muted); }
+.coords { font-size: 14px; overflow-wrap: anywhere; }
+.insight { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.insight .num { flex: none; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1; color: var(--gold-ink); width: 18px; }
+.aiout { white-space: pre-wrap; font-size: 15px; background: var(--surface-2); border-radius: 12px; padding: 12px 14px; overflow-wrap: anywhere; }
+
+/* Fiche */
+.sheet { position: absolute; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; }
+.sheet-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--brand-bg); color: var(--brand-ink); }
+.sheet-head .back { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; color: var(--brand-ink); min-height: 40px; padding: 6px 8px; font-size: 15px; }
+.sheet-head .ttl { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 14px; }
+.stagebox .now-label { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--primary); line-height: 1.1; }
+.steps { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.15; }
+.steps span:first-child { text-align: left; }
+.steps span:last-child { text-align: right; }
+.steps span.on { color: var(--primary); font-weight: 600; }
+.acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+.acts .btn { padding: 8px 6px; font-size: 14px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14.5px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.log li { display: flex; flex-direction: column; gap: 1px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.log li:first-child { border-top: 0; padding-top: 0; }
+.log .when { font-size: 12.5px; color: var(--muted); }
+.log .txt { white-space: pre-wrap; overflow-wrap: anywhere; }
+.scorebar { display: flex; align-items: center; gap: 10px; }
+.scorebar .bar { flex: 1; }
+.scorebar .sc { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--primary); font-variant-numeric: tabular-nums lining-nums; }
+
+/* Formulaires et fenêtres */
+.dialog-wrap { position: absolute; inset: 0; z-index: 40; background: var(--shade); display: flex; align-items: flex-end; justify-content: center; }
+.dialog { width: 100%; max-height: 94%; overflow-y: auto; background: var(--bg); border-radius: 18px 18px 0 0; padding: 18px 16px 22px; display: flex; flex-direction: column; gap: 14px; }
+.dialog h2 { font-size: 24px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field > label, .legend { font-size: 14px; font-weight: 500; }
+.field .help { font-size: 13px; color: var(--muted); }
+input[type="text"], input[type="tel"], input[type="email"], input[type="url"], input[type="number"], input[type="date"], input[type="search"], select, textarea { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-size: 16px; }
+textarea { min-height: 96px; resize: vertical; line-height: 1.4; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opts label { position: relative; }
+.opts input { position: absolute; opacity: 0; inset: 0; }
+.opts span { display: inline-flex; align-items: center; min-height: 38px; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; }
+.opts input:checked + span { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.opts input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+.tick { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.tick input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--primary); }
+details.more > summary { cursor: pointer; color: var(--primary); font-weight: 500; padding: 6px 0; }
+details.more[open] > summary { margin-bottom: 10px; }
+.notice { border-radius: 12px; padding: 11px 13px; font-size: 14.5px; background: var(--surface-2); }
+.notice.warn { border: 1px solid var(--warn); background: transparent; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 74px; z-index: 60; display: flex; justify-content: center; pointer-events: none; }
+.toast span { background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: 14.5px; max-width: 100%; box-shadow: 0 6px 20px rgba(0, 0, 0, .25); }
+
+/* Assistante */
+.quick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick .btn { min-height: 48px; font-size: 14.5px; padding: 8px 10px; }
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 92%; padding: 10px 13px; border-radius: 14px; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { align-self: flex-end; background: var(--primary); color: var(--on-primary); border-bottom-right-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg-tools { align-self: flex-start; display: flex; gap: 14px; margin-top: -4px; padding-left: 4px; }
+.composer { display: flex; gap: 8px; align-items: flex-end; }
+.composer textarea { min-height: 48px; }
+
+/* Guide et tableaux */
+.tbl { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tbl th { text-align: left; font-weight: 500; font-size: 12.5px; color: var(--muted); padding: 0 8px 6px 0; }
+.tbl td { padding: 8px 8px 8px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.tbl td.n, .tbl th.n { text-align: right; padding-right: 0; white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }
+.tbl-wrap { overflow-x: auto; }
+.bignum { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1; color: var(--primary); }
+.numbered { counter-reset: n; display: flex; flex-direction: column; gap: 9px; }
+.numbered li { counter-increment: n; position: relative; padding-left: 34px; font-size: 15px; }
+.numbered li::before { content: counter(n); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--gold); color: var(--primary); font-weight: 600; font-size: 13px; display: grid; place-items: center; }
+.quote { border-left: 3px solid var(--gold); background: var(--surface-2); padding: 12px 14px; border-radius: 0 12px 12px 0; font-style: italic; font-size: 15px; }
+.menu a, .menu button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; text-decoration: none; color: var(--ink); min-height: 60px; }
+.menu .m-t { font-weight: 600; }
+.menu .m-d { font-size: 13.5px; color: var(--muted); }
+.links { display: flex; flex-direction: column; gap: 6px; }
+.links a { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; color: var(--ink); font-size: 14.5px; min-height: 44px; }
+
+@media (max-width: 380px) {
+  #view, .sheet-body { padding-left: 14px; padding-right: 14px; }
+  h1 { font-size: 30px; }
+  .steps { font-size: 11px; }
+  .two { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dialog { animation: rise .18s ease-out; }
+  @keyframes rise { from { transform: translateY(18px); } to { transform: none; } }
+}
+.tbl th + th, .tbl td + td { padding-left: 12px; }
+.tbl th { white-space: nowrap; }
+.gate { position: absolute; inset: 0; z-index: 80; background: var(--bg); display: flex; flex-direction: column; overflow-y: auto; }
+.gate-body { padding: 28px 18px; display: flex; flex-direction: column; gap: 14px; max-width: 460px; width: 100%; margin: 0 auto; }
+.gate-body input { font-size: 20px; letter-spacing: .08em; text-transform: uppercase; }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><span class="brand-name">AMELA</span><span class="brand-sub">Prospection</span></div>
+    <button type="button" class="sync" id="syncChip" data-action="sync-info" aria-label="Où sont enregistrées mes données"><span class="dot"></span><span>Sur cet appareil</span></button>
+  </header>
+  <main id="view" tabindex="-1"></main>
+  <nav class="tabs" aria-label="Rubriques">
+    <a href="#accueil" data-action="tab" data-tab="accueil"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.500h9M4 12h9M4 17.500h6"/><path d="m15.500 16.500 2 2 3.500-4"/></svg><span class="lab">Aujourd’hui</span><span class="badge" hidden></span></a>
+    <a href="#prospects" data-action="tab" data-tab="prospects"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.200"/><path d="M3 19c.600-3.300 3-5 6-5s5.400 1.700 6 5"/><path d="M16 5.200a3 3 0 0 1 0 5.600M18 14.300c1.700.700 2.700 2.200 3 4.700"/></svg><span class="lab">Prospects</span></a>
+    <a href="#agent" data-action="tab" data-tab="agent"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.500"/><path d="m15.500 8.500-2 5-5 2 2-5z"/></svg><span class="lab">Agent</span></a>
+    <a href="#assistante" data-action="tab" data-tab="assistante"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4.500 3.500V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><span class="lab">AMELA</span></a>
+    <a href="#outils" data-action="tab" data-tab="outils"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.500" height="6.500" rx="1.200"/><rect x="13.500" y="4" width="6.500" height="6.500" rx="1.200"/><rect x="4" y="13.500" width="6.500" height="6.500" rx="1.200"/><rect x="13.500" y="13.500" width="6.500" height="6.500" rx="1.200"/></svg><span class="lab">Outils</span></a>
+  </nav>
+  <section id="sheet" class="sheet" hidden></section>
+  <div id="dialog" class="dialog-wrap" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+(function () {
+"use strict";
+const AUTONOME = true;
+/* ===== Données fixes de l'application ===== */
+
+const STAGES = [
+  { id: 'a_contacter', label: 'À contacter', hint: 'Tu ne lui as pas encore parlé.', todo: 'Appelle ou passe sur place, et demande la personne qui s’occupe des travaux.', next: 'Premier contact', delay: 0 },
+  { id: 'discussion', label: 'En discussion', hint: 'Tu as pris contact. Vous échangez, ou tu attends une réponse.', todo: 'Parle à la bonne personne, pose tes trois questions, puis propose un rendez-vous ou une visite de Lass.', next: 'Relancer', delay: 3 },
+  { id: 'transmis', label: 'Transmis à Lass', hint: 'Tu as envoyé le contact à Lass par écrit. Ton apport est daté.', todo: 'Lass prend le relais pour la visite et le devis. Prends des nouvelles auprès de lui.', next: 'Faire le point avec Lass', delay: 3 },
+  { id: 'client', label: 'Client', hint: 'Un premier chantier est signé. Bravo.', todo: 'Note le chantier pour ta commission, et garde le contact chaque mois.', next: 'Prendre des nouvelles', delay: 30 }
+];
+/* Anciennes étapes (version à sept étapes) ramenées aux quatre actuelles. */
+const STAGE_ALIAS = { contacte: 'discussion', rdv: 'discussion', devis: 'transmis' };
+
+const TYPES = {
+  gestion: 'Agence de gestion locative',
+  syndic: 'Syndic de copropriété',
+  saisonnier: 'Conciergerie, location saisonnière',
+  transaction: 'Agence de vente',
+  assurance: 'Expert ou assurance',
+  entreprise: 'Entreprise, commerce, bureaux',
+  particulier: 'Particulier',
+  autre: 'Autre'
+};
+
+const RESEAUX = { independant: 'Indépendante', reseau: 'Réseau', groupe: 'Grand groupe', inconnu: '' };
+
+const ZONES = {
+  montpellier: 'Montpellier et alentours',
+  herault: 'Reste de l’Hérault, Nîmes',
+  idf: 'Paris, Île-de-France',
+  ailleurs: 'Ailleurs'
+};
+
+const KINDS = { appel: 'Appel', visite: 'Passage sur place', email: 'E-mail', whatsapp: 'WhatsApp ou SMS', rdv: 'Rendez-vous', note: 'Note' };
+const CONTACT_KINDS = ['appel', 'visite', 'email', 'whatsapp', 'rdv'];
+
+const CH_STATUTS = { devis: 'Devis signé', facture: 'Facturé', paye: 'Payé par le client', recu: 'Commission reçue' };
+
+const RAISONS_PERDU = ['Pas de besoin pour l’instant', 'A déjà ses artisans', 'Ne veut pas être démarché', 'Pas le bon moment', 'Autre'];
+
+/* Réglages modifiables sans republier : le document « config/app » de la base peut les remplacer. */
+const CONFIG = { bareme: [[null, 0]], recosVerifiees: '', lassTel: '' };
+
+/* Présentation de l'entreprise : ce que l'apporteuse peut dire. Aucun prix, aucune offre commerciale. */
+const AMELA = {
+  phrase: 'AMELA CONCEPT est une entreprise de rénovation intérieure et de finitions, installée à Baillargues, à côté de Montpellier.',
+  fiche: [
+    ['Créée en', 'juillet 2025'],
+    ['Équipe', '3 personnes, plus un réseau d’artisans partenaires par métier'],
+    ['Secteur', 'Montpellier et tout l’Hérault en priorité, jusqu’à Nîmes. Aussi Paris et l’Île-de-France.'],
+    ['Assurance', 'Décennale et responsabilité civile professionnelle (APRIL / QBE), attestation 2026']
+  ],
+  travaux: ['Peinture', 'Placo et cloisons', 'Sols : parquet, carrelage', 'Salles de bain et WC', 'Électricité', 'Remise en état après un dégât des eaux ou entre deux locataires'],
+  pasFait: 'Pas de gros œuvre, de toiture ni de façade.',
+  atouts: [
+    ['Un devis sous 24 à 48 h', 'clair et détaillé, après la visite ou l’envoi des éléments (photos, mesures).'],
+    ['Un seul interlocuteur', 'pour tous les corps de métier, du devis à la fin du chantier.'],
+    ['L’habitude des professionnels', 'agences de gestion locative, syndics, bailleur social, experts d’assurance.']
+  ],
+  durees: [['Petits travaux, peinture d’une pièce', '1 à 3 jours'], ['Sol d’un séjour', '2 à 4 jours'], ['Salle de bain ou WC complet', '1 à 2 semaines'], ['Rénovation complète', '3 à 6 semaines']],
+  dureesNote: 'Durées moyennes de chantier, selon la surface. Ce ne sont pas des engagements.',
+  accroche: 'AMELA CONCEPT est une entreprise de rénovation intérieure de Baillargues : peinture, sols, placo, salles de bain, électricité. Vous avez un seul interlocuteur pour tous les travaux, et un devis détaillé sous 24 à 48 h après la visite ou l’envoi de photos.',
+  questions: [
+    'Quels travaux faites-vous faire le plus souvent, et à quel rythme ?',
+    'Qui s’en occupe aujourd’hui, et qu’est-ce qui vous pose problème : les délais, les devis, le suivi ?',
+    'Avez-vous un chantier à venir pour lequel AMELA pourrait vous faire un devis ?'
+  ],
+  objections: [
+    ['On a déjà nos artisans.', 'Gardez-les. Le jour où l’un d’eux est pris ou trop long, AMELA peut vous faire un devis sous 24 à 48 h. Je vous laisse nos coordonnées ?'],
+    ['Envoyez-nous un mail.', 'Avec plaisir. À qui je l’adresse, et quel est le meilleur moment pour vous rappeler ensuite ?'],
+    ['Vous êtes une jeune entreprise.', 'Créée en juillet 2025, assurée en décennale et en responsabilité civile. AMELA travaille déjà pour des agences de gestion, des syndics, un bailleur social et des experts d’assurance.'],
+    ['Quels sont vos prix ?', 'C’est le gérant, Lass, qui chiffre. Le devis est détaillé, et vous l’avez sous 24 à 48 h après la visite ou l’envoi de photos.'],
+    ['Je n’ai pas de besoin en ce moment.', 'Je comprends. Puis-je vous rappeler dans un mois ou deux ? Et si des travaux arrivent avant, vous avez mon numéro.']
+  ],
+  role: 'Tu présentes AMELA CONCEPT et tu mets en relation. Les visites, les devis, les prix et la signature, c’est Lass. Tu n’annonces aucun prix.'
+};
+
+const SEGMENTS = [
+  ['Agences de gestion locative', 'Elles font faire des travaux à chaque changement de locataire : peinture, sols, petites réparations.'],
+  ['Syndics de copropriété', 'Peinture des halls, des paliers et des cages d’escalier, remises en état dans les immeubles.'],
+  ['Conciergeries et locations saisonnières', 'Des logements qui tournent vite et qu’il faut rafraîchir souvent.'],
+  ['Agences de vente', 'Rafraîchir un bien avant de le vendre, ou des travaux pour les acheteurs.'],
+  ['Commerces, bureaux, cabinets', 'Rénover ou aménager un local : peinture, cloisons, sols, électricité.'],
+  ['Experts et assurances', 'Remettre un logement en état après un dégât des eaux.'],
+  ['Propriétaires que tu connais', 'Seulement s’ils t’en parlent eux-mêmes ou s’ils sont d’accord pour être rappelés : un particulier ne se démarche pas à froid.']
+];
+
+const COMMUNES = ['Montpellier', 'Castelnau-le-Lez', 'Lattes', 'Mauguio', 'Baillargues', 'Le Crès', 'Vendargues', 'Saint-Aunès', 'Pérols', 'Saint-Jean-de-Védas', 'Juvignac', 'Lunel', 'Nîmes'];
+
+const RECHERCHES = ['agence gestion locative', 'administrateur de biens', 'syndic de copropriété', 'conciergerie location courte durée', 'agence immobilière'];
+
+const LEXIQUE = [
+  ['Gestion locative', 'L’agence s’occupe d’un logement loué à la place du propriétaire : trouver le locataire, encaisser le loyer, gérer les problèmes et les travaux.'],
+  ['Mandat de gestion', 'Le contrat par lequel un propriétaire confie son logement à l’agence.'],
+  ['Bailleur', 'Le propriétaire qui loue son logement.'],
+  ['État des lieux de sortie', 'Le constat de l’état du logement quand le locataire s’en va. On le compare à celui d’entrée pour savoir ce qui doit être réparé.'],
+  ['Dépôt de garantie', 'La somme versée par le locataire à son arrivée. Elle lui est rendue à son départ, moins les réparations qui sont à sa charge.'],
+  ['Relocation', 'Le fait de relouer un logement après le départ d’un locataire.'],
+  ['Vacance locative', 'La période où un logement reste vide entre deux locataires. Le propriétaire ne touche pas de loyer.'],
+  ['Ordre de service', 'Le document par lequel l’agence commande des travaux à une entreprise.'],
+  ['Devis', 'Le document qui détaille les travaux et leur prix avant de commencer. Une fois signé, il engage les deux parties.'],
+  ['HT et TTC', 'HT : hors taxes, le prix avant TVA. TTC : toutes taxes comprises, le prix payé par le client. Ta commission se calcule sur le HT.'],
+  ['Syndic de copropriété', 'L’entreprise qui gère les parties communes d’un immeuble pour le compte des copropriétaires.'],
+  ['Parties communes', 'Ce qui appartient à tous dans un immeuble : hall, escaliers, paliers, couloirs.'],
+  ['Apport d’affaires', 'Tu mets en relation un client et AMELA CONCEPT. Si un chantier est signé et payé, tu touches une commission.']
+];
+
+/* Fiches de départ à ne pas proposer (aucune pour l'instant : Lass a confié à l'apporteuse les agences
+   que son Studio avait aussi en liste). Un document « reco/<id> » complet dans la base rend une fiche de nouveau visible. */
+const RESERVES = [];
+
+/* Prospects recommandés : fiches vérifiées le 17 novembre 2026 sur les sources indiquées.
+   La collection « reco » de la base complète ou corrige cette liste. */
+const BASE_RECOS = [];
+
+/* ===== Version indépendante : la page vit hors de Claude =====
+   Les données sont dans la base d'AMELA Studio (tables prosp_*), derrière la fonction prosp_sync.
+   Chaque personne entre une fois son code personnel sur chaque appareil.
+   Ce fichier imite la petite partie de la base de Claude que le reste du code utilise :
+   doc().get/set/delete/onSnapshot et collection().get/onSnapshot. */
+const SB = { url: 'https://pvelbkaltnrgxwgammmv.supabase.co/rest/v1/rpc/prosp_sync', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWxia2FsdG5yZ3h3Z2FtbW12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjM3NDcsImV4cCI6MjEwMzQzOTc0N30.NJITj_9aMyYBBAglW541sZxd4-iB_12S9lb55nU6sQQ' };
+const CODE_KEY = 'amela-prospection-code';
+const CACHE_KEY = 'amela-prospection-cache';
+const META = Object.freeze({ fromCache: false, hasPendingWrites: false });
+const remote = {
+  code: '', mirror: {}, etat: null, etatMaj: '', recos: [], config: {}, depuis: null,
+  loaded: false, ready: null, out: [], pumping: false, wantPull: false, wantFull: false,
+  subsP: [], subsE: [], timer: 0, bound: false, lastFull: 0, sharedSig: ''
+};
+const codeNorm = c => String(c || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+const codeJoli = c => codeNorm(c).replace(/(.{4})(?=.)/g, '$1-');
+try { remote.code = codeNorm(localStorage.getItem(CODE_KEY)); } catch (e) { remote.code = ''; }
+try {
+  const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+  if (c && typeof c === 'object') { remote.recos = Array.isArray(c.recos) ? c.recos : []; remote.config = c.config && typeof c.config === 'object' ? c.config : {}; remote.sharedSig = JSON.stringify([remote.recos, remote.config]); }
+} catch (e) { /* pas de copie locale */ }
+
+async function sbRpc(body) {
+  let res;
+  try {
+    res = await fetch(SB.url, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB.key, Authorization: 'Bearer ' + SB.key }, body: JSON.stringify(body) });
+  } catch (e) { throw { code: 'unavailable', message: 'réseau' }; }
+  if (!res.ok) throw { code: res.status >= 500 || res.status === 429 || res.status === 408 ? 'unavailable' : 'invalid_argument', message: 'HTTP ' + res.status };
+  let j = null;
+  try { j = await res.json(); } catch (e) { throw { code: 'unavailable', message: 'réponse illisible' }; }
+  if (!j || j.ok !== true) throw { code: j && j.erreur === 'code' ? 'bad_code' : 'invalid_argument', message: (j && j.erreur) || 'refus' };
+  return j;
+}
+/* Un échange avec la base : on envoie ce qui attend, on reçoit ce qui a changé. */
+async function sbExchange(prospects, etat, complet) {
+  const full = complet || !remote.depuis;
+  const j = await sbRpc({ p_code: remote.code, p_depuis: full ? null : remote.depuis, p_prospects: prospects, p_etat: etat, p_complet: full });
+  let changedP = false, changedE = false;
+  if (j.complet) { remote.mirror = {}; changedP = true; remote.lastFull = Date.now(); }
+  (j.prospects || []).forEach(r => {
+    if (!r || !r.id) return;
+    if (r.supprime) { if (remote.mirror[r.id]) { delete remote.mirror[r.id]; changedP = true; } }
+    else {
+      const d = r.data && typeof r.data === 'object' ? r.data : {};
+      if (!remote.mirror[r.id] || JSON.stringify(remote.mirror[r.id]) !== JSON.stringify(d)) { remote.mirror[r.id] = d; changedP = true; }
+    }
+  });
+  if (j.etat && j.etat.maj !== remote.etatMaj) { remote.etat = j.etat.data || {}; remote.etatMaj = j.etat.maj; changedE = true; }
+  let shared = false;
+  if (j.recos || j.config) {
+    if (Array.isArray(j.recos)) remote.recos = j.recos;
+    if (j.config && typeof j.config === 'object') remote.config = j.config;
+    const sig = JSON.stringify([remote.recos, remote.config]);
+    if (sig !== remote.sharedSig) { shared = true; remote.sharedSig = sig; }
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ recos: remote.recos, config: remote.config })); } catch (e) { /* tant pis */ }
+  }
+  /* Deux minutes de recouvrement : une écriture faite au même instant sur un autre appareil n'est jamais manquée. */
+  remote.depuis = new Date(new Date(j.maintenant).getTime() - 120000).toISOString();
+  const first = !remote.loaded;
+  remote.loaded = true;
+  if (changedP || first) remote.subsP.slice().forEach(f => { try { f(sbSnapP()); } catch (e) { /* écouteur fautif */ } });
+  if (changedE || first) remote.subsE.slice().forEach(f => { try { f(sbSnapE()); } catch (e) { /* écouteur fautif */ } });
+  if (shared) loadShared().then(refresh).catch(() => {});
+  return j;
+}
+/* File d'attente : un seul échange à la fois, les écritures proches partent ensemble. */
+async function sbPump() {
+  if (remote.pumping) return;
+  remote.pumping = true;
+  try {
+    while (remote.out.length || remote.wantPull) {
+      const batch = remote.out.splice(0, 100);
+      const complet = remote.wantFull;
+      remote.wantPull = false; remote.wantFull = false;
+      const prospects = []; let etat = null;
+      batch.forEach(b => { if (b.item) prospects.push(b.item); if (b.etat) etat = b.etat; });
+      try {
+        await sbExchange(prospects, etat, complet);
+        batch.forEach(b => b.resolve());
+      } catch (e) {
+        batch.forEach(b => b.reject(e));
+        if (e && e.code === 'bad_code') { sbForget(); sbGate('Ce code n’est plus valable. Demande-le de nouveau à Lass.'); remote.out.splice(0).forEach(b => b.reject(e)); break; }
+        if (!batch.length) break;
+      }
+    }
+  } finally { remote.pumping = false; }
+}
+function sbQueue(entry) {
+  return new Promise((resolve, reject) => { remote.out.push(Object.assign({ resolve, reject }, entry)); sbPump(); });
+}
+function sbPull(full) { remote.wantPull = true; if (full) remote.wantFull = true; sbPump(); }
+function sbTimers() {
+  if (remote.bound) return;
+  remote.bound = true;
+  const tick = () => { if (document.visibilityState === 'visible' && remote.code && remote.loaded) sbPull(Date.now() - remote.lastFull > 30 * 60000); };
+  remote.timer = setInterval(tick, 45000);
+  document.addEventListener('visibilitychange', tick);
+  window.addEventListener('online', () => { if (remote.code) sbPull(false); });
+}
+function sbEnsure() {
+  if (!remote.ready) { remote.ready = sbQueue({}).catch(() => null); sbTimers(); }
+  return remote.ready;
+}
+const sbSnapDoc = (id, body) => ({ id, exists: !!body, data: () => body || undefined, metadata: META });
+function sbSnapP() {
+  const docs = Object.keys(remote.mirror).sort().map(id => sbSnapDoc(id, remote.mirror[id]));
+  return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: META };
+}
+const sbSnapE = () => sbSnapDoc('state', remote.etat);
+function sbListen(list, snap, next, error) {
+  list.push(next);
+  if (remote.loaded) setTimeout(() => { if (list.includes(next)) next(snap()); }, 0);
+  else sbEnsure().then(() => { if (!remote.loaded && error && list.includes(next)) error({ code: 'unavailable', message: 'base injoignable' }); });
+  return () => { const i = list.indexOf(next); if (i >= 0) list.splice(i, 1); };
+}
+const sbDb = {
+  doc(path) {
+    const seg = String(path).split('/');
+    const col = seg[0], id = seg[1];
+    return {
+      id, path,
+      async get() {
+        await sbEnsure();
+        if (col === 'config') return sbSnapDoc(id, remote.config[id]);
+        if (col === 'prospects') return sbSnapDoc(id, remote.mirror[id]);
+        if (col === 'app' && id === 'state') return sbSnapE();
+        return sbSnapDoc(id, null);
+      },
+      set(data) {
+        if (col === 'prospects') return sbQueue({ item: { id, data: JSON.parse(JSON.stringify(data)) } });
+        if (col === 'app' && id === 'state') return sbQueue({ etat: JSON.parse(JSON.stringify(data)) });
+        if (col === 'app') return sbQueue({});
+        return Promise.reject({ code: 'invalid_argument', message: 'écriture non prévue' });
+      },
+      delete() {
+        if (col === 'prospects') return sbQueue({ item: { id, supprime: true } });
+        return Promise.resolve();
+      },
+      onSnapshot(next, error) {
+        if (col === 'app' && id === 'state') return sbListen(remote.subsE, sbSnapE, next, error);
+        return () => {};
+      }
+    };
+  },
+  collection(path) {
+    return {
+      path,
+      doc: id => sbDb.doc(path + '/' + id),
+      async get() {
+        await sbEnsure();
+        if (path === 'reco') {
+          const docs = remote.recos.filter(r => r && r.id).map(r => sbSnapDoc(String(r.id), r));
+          return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: META };
+        }
+        if (path === 'prospects') return sbSnapP();
+        return { docs: [], size: 0, empty: true, docChanges: () => [], metadata: META };
+      },
+      onSnapshot(next, error) {
+        if (path === 'prospects') return sbListen(remote.subsP, sbSnapP, next, error);
+        return () => {};
+      }
+    };
+  }
+};
+/* Hors de Claude, la page peut enregistrer un fichier elle-même. */
+const sbDownloads = {
+  async save(o) {
+    const blob = o.data instanceof Blob ? o.data : new Blob([o.data], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = String(o.filename || 'fichier');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return { status: 'saved' };
+  }
+};
+function sbForget() {
+  remote.code = ''; remote.ready = null; remote.loaded = false; remote.depuis = null; remote.mirror = {}; remote.etat = null; remote.etatMaj = '';
+  try { localStorage.removeItem(CODE_KEY); } catch (e) { /* rien */ }
+}
+/* Écran d'accès : le code se saisit une fois par appareil. */
+function sbGate(message) {
+  let g = document.getElementById('gate');
+  if (!g) { g = document.createElement('div'); g.id = 'gate'; g.className = 'gate'; document.getElementById('app').appendChild(g); }
+  g.innerHTML = '<div class="top"><div class="brand"><span class="brand-name">AMELA</span><span class="brand-sub">Prospection</span></div></div>'
+    + '<form class="gate-body" id="gate-form"><h1>Bienvenue</h1><p class="lede">Entre ton code d’accès. Tu ne le saisis qu’une fois sur chaque appareil.</p>'
+    + '<div class="field"><label for="gate-code">Ton code d’accès</label><input type="text" id="gate-code" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="40" placeholder="XXXX-XXXX-XXXX" required></div>'
+    + '<p class="notice warn" id="gate-msg"' + (message ? '' : ' hidden') + '></p>'
+    + '<div class="row"><button class="btn" type="submit" id="gate-go">Entrer</button></div>'
+    + '<p class="small muted">Ton code t’a été donné par Lass. Si tu l’as perdu, demande-le-lui.</p></form>';
+  const msg = g.querySelector('#gate-msg');
+  if (message) msg.textContent = message;
+  const form = g.querySelector('#gate-form');
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const btn = g.querySelector('#gate-go');
+    const code = codeNorm(g.querySelector('#gate-code').value);
+    if (code.length < 8) { msg.hidden = false; msg.textContent = 'Ce code est trop court. Vérifie-le.'; return; }
+    btn.disabled = true; btn.textContent = 'Vérification…';
+    sbForget(); remote.code = code;
+    try {
+      await sbExchange([], null, true);
+      try { localStorage.setItem(CODE_KEY, code); } catch (e) { /* le code sera redemandé */ }
+      remote.ready = Promise.resolve();
+      sbTimers();
+      g.remove();
+      boot();
+    } catch (e) {
+      remote.code = '';
+      btn.disabled = false; btn.textContent = 'Entrer';
+      msg.hidden = false;
+      msg.textContent = e && e.code === 'bad_code' ? 'Ce code n’est pas reconnu. Vérifie chaque lettre et chaque chiffre.' : 'Pas de connexion pour l’instant. Réessaie dans un moment.';
+    }
+  });
+  const inp = g.querySelector('#gate-code');
+  try { inp.focus(); } catch (e) { /* pas de focus */ }
+}
+function sbSignOut() {
+  sbForget();
+  try { localStorage.removeItem(LS_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) { /* rien */ }
+  location.reload();
+}
+window.claude = { use: async n => (n === 'db' ? sbDb : n === 'downloads' ? sbDownloads : null) };
+
+/* ===== Outils ===== */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const uid = p => p + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const pad = n => String(n).padStart(2, '0');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const todayISO = () => iso(new Date());
+const nowStamp = () => { const d = new Date(); return iso(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const parseISO = s => { const a = String(s).slice(0, 10).split('-').map(Number); return new Date(a[0], a[1] - 1, a[2]); };
+const addDays = (s, n) => { const d = parseISO(s); d.setDate(d.getDate() + n); return iso(d); };
+const diffDays = (a, b) => Math.round((parseISO(a) - parseISO(b)) / 86400000);
+const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ''));
+const F_LONG = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const F_SHORT = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
+const F_DAY = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' });
+const fmtInt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const fmtEur = x => {
+  const r = Math.round((Number(x) || 0) * 100) / 100;
+  const ent = Math.floor(r);
+  const cents = Math.round((r - ent) * 100);
+  return (cents ? fmtInt(ent) + ',' + pad(cents) : fmtInt(ent)) + ' €';
+};
+const num = v => { const n = Number(String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.')); return Number.isFinite(n) && n > 0 ? n : null; };
+const safeUrl = u => { const s = String(u || '').trim(); return /^https?:\/\//i.test(s) ? s : ''; };
+const withHttp = u => { const s = String(u || '').trim(); if (!s) return ''; return /^https?:\/\//i.test(s) ? s : 'https://' + s.replace(/^\/+/, ''); };
+const telDigits = t => String(t || '').replace(/[^\d+]/g, '');
+const telIntl = t => { let d = telDigits(t).replace(/^\+/, ''); if (/^0\d{9}$/.test(d)) d = '33' + d.slice(1); return d; };
+const isMobile = t => /^(0|33)[67]/.test(telDigits(t).replace(/^\+/, ''));
+
+function relDay(date) {
+  const n = diffDays(date, todayISO());
+  if (n === 0) return 'aujourd’hui';
+  if (n === 1) return 'demain';
+  if (n === -1) return 'hier';
+  if (n > 1 && n < 7) return F_DAY.format(parseISO(date));
+  if (n < -1) return 'en retard de ' + (-n) + ' jours';
+  return 'le ' + F_SHORT.format(parseISO(date));
+}
+function fmtStamp(t) {
+  const hm = String(t).length > 10 ? ' à ' + String(t).slice(11, 16).replace(':', ' h ') : '';
+  return F_SHORT.format(parseISO(t)) + hm;
+}
+
+/* Espaces insécables à la française, sur le texte affiché seulement. */
+function frTypo(html) {
+  let inTA = false;
+  return html.split(/(<[^>]+>)/).map(part => {
+    if (part.charAt(0) === '<') {
+      if (/^<textarea/i.test(part)) inTA = true; else if (/^<\/textarea/i.test(part)) inTA = false;
+      return part;
+    }
+    if (inTA) return part;
+    return part.replace(/ ([:;?!»%€])/g, ' $1').replace(/« /g, '« ')
+      .replace(/(\d) (\d{3})(?!\d)/g, '$1 $2')
+      .replace(/(\d) (h|m²|jours?|mois|semaines?)(?![a-zA-Zà-ÿ])/g, '$1 $2');
+  }).join('');
+}
+function setHTML(el, html) { el.innerHTML = frTypo(html); }
+
+/* ===== État ===== */
+const LS_KEY = 'amela-prospection-v1';
+function defaultState() {
+  return {
+    v: 1,
+    profile: { prenom: '', named: false },
+    settings: { objectif: 10, lassTel: '', clients: '' },
+    prospects: {},
+    reco: {},
+    onboarding: { guide: false, assistante: false, masque: false },
+    meta: { lastBackup: '', changes: 0, cloudSynced: false, appSynced: false, pending: {} },
+    chat: []
+  };
+}
+const fixStage = p => { if (p && STAGE_ALIAS[p.stage]) p.stage = STAGE_ALIAS[p.stage]; return p; };
+function mergeState(d) {
+  const b = defaultState();
+  const prospects = d.prospects && typeof d.prospects === 'object' ? d.prospects : {};
+  Object.values(prospects).forEach(fixStage);
+  return {
+    v: 1,
+    profile: Object.assign(b.profile, d.profile),
+    settings: Object.assign(b.settings, d.settings),
+    prospects,
+    reco: d.reco && typeof d.reco === 'object' ? d.reco : {},
+    onboarding: Object.assign(b.onboarding, d.onboarding),
+    meta: Object.assign(b.meta, d.meta),
+    chat: Array.isArray(d.chat) ? d.chat.slice(-30) : []
+  };
+}
+let S = defaultState();
+const mem = { lsOk: true };
+function loadLocal() {
+  try {
+    localStorage.setItem(LS_KEY + '-test', '1'); localStorage.removeItem(LS_KEY + '-test');
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) { const d = JSON.parse(raw); if (d && d.v === 1) S = mergeState(d); }
+  } catch (e) { mem.lsOk = false; }
+}
+function saveLocal() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); mem.lsOk = true; } catch (e) { mem.lsOk = false; }
+}
+
+function newProspect(o) {
+  const t = nowStamp();
+  return Object.assign({
+    id: uid('p_'), nom: '', type: 'gestion', reseau: 'inconnu', zone: 'montpellier', ville: '', adresse: '', tel: '', email: '', site: '',
+    contactNom: '', contactRole: '', lots: null, f: {}, q1: '', q2: '', q3: '', notes: '',
+    stage: 'a_contacter', next: { text: 'Premier contact', date: todayISO() }, log: [], chantiers: [],
+    createdAt: t, updatedAt: t, source: 'perso', recoId: '', transmisLe: '', perduRaison: '', dejaClient: false, avis: null
+  }, o || {});
+}
+const stageIndex = id => STAGES.findIndex(s => s.id === id);
+const stageOf = id => STAGES[stageIndex(id)] || null;
+const stageLabel = id => id === 'perdu' ? 'Perdu ou plus tard' : (stageOf(id) ? stageOf(id).label : '');
+const allProspects = () => Object.values(S.prospects);
+const liveProspects = () => allProspects().filter(p => p.stage !== 'perdu');
+
+/* ===== Note d'un prospect ===== */
+function qualify(p) {
+  if (estDejaClient(p)) return { score: 0, grade: '—', blocked: true, reasons: ['Déjà client d’AMELA CONCEPT : ce contact ne compte pas comme un apport.'], manque: [] };
+  const f = p.f || {};
+  const R = [];
+  let s = 0;
+  const add = (n, t) => { s += n; if (t) R.push([n, t]); };
+  const T = {
+    gestion: [35, 'Gère des logements loués : des travaux à chaque changement de locataire.'],
+    saisonnier: [28, 'Locations de courte durée : des rafraîchissements fréquents.'],
+    syndic: [22, 'Syndic : peinture des parties communes et petites remises en état.'],
+    assurance: [20, 'Des dossiers de dégâts des eaux à remettre en état.'],
+    transaction: [12, 'Agence de vente : des travaux ponctuels avant une vente.'],
+    entreprise: [10, 'Local professionnel : un chantier ponctuel.'],
+    particulier: [6, 'Particulier : un seul chantier.'],
+    autre: [8, '']
+  };
+  const t = T[p.type] || T.autre;
+  add(t[0], t[1]);
+  const lots = Number(p.lots) || 0;
+  if (lots >= 500) add(20, 'Gros portefeuille : ' + fmtInt(lots) + ' logements gérés.');
+  else if (lots >= 200) add(15, fmtInt(lots) + ' logements gérés.');
+  else if (lots >= 50) add(10, lots + ' logements gérés.');
+  else if (lots > 0) add(5, 'Petit portefeuille : ' + lots + ' logements gérés.');
+  else add(6, '');
+  if (f.rotation) add(8, 'Logements étudiants, meublés ou saisonniers : les locataires changent souvent.');
+  if (f.travaux) add(8, 'Commande ou suit des travaux pour ses propriétaires.');
+  if (f.specialiste) add(6, 'Spécialiste de la gestion locative.');
+  if (f.syndic && p.type !== 'syndic') add(4, 'Fait aussi du syndic : un deuxième besoin possible.');
+  if (f.multi) add(4, 'Plusieurs agences : un accord peut en ouvrir d’autres.');
+  if (f.proche) add(3, 'Tout près de Baillargues.');
+  if (f.besoin) add(10, 'T’a parlé d’un problème avec ses artisans.');
+  if (p.reseau === 'independant') add(12, 'Indépendante : la décision se prend sur place.');
+  else if (p.reseau === 'reseau') add(7, 'Agence d’un réseau : la décision reste locale.');
+  else if (p.reseau === 'groupe') add(3, 'Grand groupe : la décision peut se prendre plus haut.');
+  else add(6, '');
+  if (!p.zone || p.zone === 'montpellier') add(8, '');
+  else if (p.zone === 'herault' || p.zone === 'idf') add(4, '');
+  else add(0, 'Hors du secteur habituel d’AMELA : à vérifier avec Lass.');
+  if (p.contactNom) add(5, 'Tu connais le nom de ton contact.');
+  if (p.tel) add(3, '');
+  if (f.interne) add(-25, 'A déjà sa propre société de travaux : peu de chances.');
+  const score = Math.max(0, Math.min(100, Math.round(s)));
+  const grade = score >= 70 ? 'A' : score >= 50 ? 'B' : 'C';
+  const manque = [];
+  const gere = p.type === 'gestion' || p.type === 'syndic' || p.type === 'saisonnier';
+  if (gere && !lots) manque.push('le nombre de logements gérés');
+  if (!p.contactNom) manque.push('le nom de la personne à contacter');
+  if (!p.tel) manque.push('le téléphone');
+  if (gere && (!p.reseau || p.reseau === 'inconnu')) manque.push('si elle est indépendante ou en réseau');
+  R.sort((a, b) => b[0] - a[0]);
+  return { score, grade, reasons: R.map(r => r[1]), manque };
+}
+
+/* ===== Recommandations ===== */
+function normalizeReco(r) {
+  const src = Array.isArray(r.source) ? r.source : [r.sourceLabel || (r.source && r.source.label) || '', r.sourceUrl || (r.source && r.source.url) || ''];
+  const arr = v => Array.isArray(v) ? v.map(String).filter(Boolean) : (v ? [String(v)] : []);
+  return {
+    id: String(r.id || ''), nom: String(r.nom || ''), type: TYPES[r.type] ? r.type : 'autre',
+    reseau: RESEAUX[r.reseau] !== undefined ? r.reseau : 'inconnu', ville: String(r.ville || ''), adresse: String(r.adresse || ''),
+    tel: String(r.tel || ''), site: safeUrl(r.site), lots: num(r.lots), signaux: arr(r.signaux), pourquoi: arr(r.pourquoi),
+    conseil: String(r.conseil || ''), sourceLabel: String(src[0] || ''), sourceUrl: safeUrl(src[1]), zone: ZONES[r.zone] ? r.zone : 'montpellier',
+    verifieLe: String(r.verifieLe || ''), ajouteLe: isDate(r.ajouteLe) ? String(r.ajouteLe) : '', actif: r.actif !== false
+  };
+}
+const baseRecos = () => BASE_RECOS.filter(r => !RESERVES.includes(r.id)).map(normalizeReco);
+let RECOS = baseRecos();
+function recoFlags(r) {
+  const f = {};
+  ['rotation', 'travaux', 'specialiste', 'syndic', 'multi', 'proche'].forEach(k => { if (r.signaux.includes(k)) f[k] = true; });
+  return f;
+}
+const recoNew = r => { if (!r.ajouteLe) return false; const n = diffDays(todayISO(), r.ajouteLe); return n >= 0 && n <= 14; };
+const recoQual = r => qualify({ type: r.type, reseau: r.reseau, zone: r.zone, lots: r.lots, tel: r.tel, f: recoFlags(r) });
+function openRecos() {
+  return RECOS.filter(r => r.actif && r.nom && !S.reco[r.id]).map(r => ({ r, q: recoQual(r) })).sort((a, b) => (recoNew(b.r) - recoNew(a.r)) || b.q.score - a.q.score || a.r.nom.localeCompare(b.r.nom, 'fr'));
+}
+
+/* ===== Commission ===== */
+function commission(m) {
+  m = Number(m) || 0;
+  let total = 0, bas = 0;
+  for (const [plaf, taux] of CONFIG.bareme) {
+    const haut = plaf == null ? m : Math.min(m, plaf);
+    if (haut > bas) total += (haut - bas) * taux;
+    if (plaf == null || m <= plaf) break;
+    bas = plaf;
+  }
+  return Math.round(total * 100) / 100;
+}
+const pct = t => String(Math.round(t * 1000) / 10).replace('.', ',') + ' %';
+function baremeRows() {
+  return CONFIG.bareme.map((b, i) => {
+    const bas = i === 0 ? 0 : CONFIG.bareme[i - 1][0];
+    const lib = i === 0 ? 'Jusqu’à ' + fmtInt(b[0]) + ' €' : b[0] == null ? 'Au-delà de ' + fmtInt(bas) + ' €' : 'De ' + fmtInt(bas) + ' à ' + fmtInt(b[0]) + ' €';
+    return [lib, pct(b[1])];
+  });
+}
+const baremeText = () => baremeRows().map(r => r[0].toLowerCase() + ' : ' + r[1]).join(' ; ');
+function commissionTotals() {
+  let gagne = 0, avenir = 0, recu = 0;
+  const rows = [];
+  for (const p of allProspects()) for (const ch of (p.chantiers || [])) {
+    const c = commission(ch.montant);
+    rows.push({ p, ch, c });
+    if (ch.statut === 'recu') recu += c; else if (ch.statut === 'paye') gagne += c; else avenir += c;
+  }
+  rows.sort((a, b) => String(b.ch.date || '').localeCompare(String(a.ch.date || '')));
+  return { gagne, avenir, recu, rows };
+}
+
+/* ===== Tâches, semaine, conseils ===== */
+function getTasks() {
+  const t = todayISO();
+  const out = [];
+  for (const p of allProspects()) {
+    if (p.stage === 'perdu') {
+      if (p.next && p.next.date && p.next.date <= t) out.push({ p, kind: 'due', date: p.next.date, text: p.next.text || 'Reprendre contact' });
+      continue;
+    }
+    const st = stageOf(p.stage) || STAGES[0];
+    if (p.next && p.next.date) {
+      if (p.next.date <= t) out.push({ p, kind: 'due', date: p.next.date, text: p.next.text || st.next });
+    } else if (p.stage === 'a_contacter') out.push({ p, kind: 'new', date: null, text: 'Premier contact' });
+    else out.push({ p, kind: 'noplan', date: null, text: 'Aucune suite prévue' });
+  }
+  const rank = { due: 0, new: 1, noplan: 2 };
+  out.sort((a, b) => rank[a.kind] - rank[b.kind] || String(a.date || '').localeCompare(String(b.date || '')) || qualify(b.p).score - qualify(a.p).score);
+  return out;
+}
+function weekRange() {
+  const d = new Date();
+  const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+  return [iso(mon), iso(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6))];
+}
+const firstContact = p => (p.log || []).filter(l => CONTACT_KINDS.includes(l.kind)).map(l => String(l.t).slice(0, 10)).sort()[0] || '';
+const lastContact = p => (p.log || []).filter(l => CONTACT_KINDS.includes(l.kind)).map(l => String(l.t).slice(0, 10)).sort().pop() || '';
+function weekStats() {
+  const [a, b] = weekRange();
+  let contacts = 0, rdv = 0, echanges = 0;
+  for (const p of allProspects()) {
+    const fc = firstContact(p);
+    if (fc && fc >= a && fc <= b) contacts++;
+    for (const l of (p.log || [])) {
+      const d = String(l.t).slice(0, 10);
+      if (d >= a && d <= b) { if (l.kind === 'rdv') rdv++; if (CONTACT_KINDS.includes(l.kind)) echanges++; }
+    }
+  }
+  return { contacts, rdv, echanges };
+}
+function agentInsights() {
+  const t = todayISO();
+  const out = [];
+  const ps = liveProspects();
+  if (!ps.length) {
+    out.push({ t: 'Ajoute cinq prospects recommandés pour démarrer. Commence par ceux notés A.' });
+    out.push({ t: 'Lis la présentation d’AMELA CONCEPT avant ton premier appel : tu sauras quoi dire.' });
+    return out;
+  }
+  const late = ps.filter(p => p.next && p.next.date && p.next.date < t).sort((a, b) => a.next.date.localeCompare(b.next.date));
+  if (late.length) out.push({ t: late.length === 1 ? 'Une relance est en retard : ' + late[0].nom + '. Commence par là.' : late.length + ' relances sont en retard. Commence par ' + late[0].nom + '.', id: late[0].id });
+  const neuf = ps.filter(p => p.stage === 'a_contacter').map(p => ({ p, q: qualify(p) })).sort((a, b) => b.q.score - a.q.score)[0];
+  if (neuf) out.push({ t: neuf.p.nom + ' est ton meilleur prospect pas encore contacté (note ' + neuf.q.grade + ').', id: neuf.p.id });
+  const lent = ps.find(p => p.stage === 'discussion' && lastContact(p) && diffDays(t, lastContact(p)) >= 7);
+  if (lent) out.push({ t: 'Tu discutes avec ' + lent.nom + ' depuis plus d’une semaine : propose un rendez-vous ou une visite de Lass.', id: lent.id });
+  const rdv = ps.find(p => p.stage === 'discussion' && !p.transmisLe && (p.log || []).some(l => l.kind === 'rdv'));
+  if (rdv) out.push({ t: 'Tu as eu un rendez-vous avec ' + rdv.nom + ' : transmets le contact à Lass par écrit, c’est ce qui date ton apport.', id: rdv.id });
+  const att = ps.find(p => p.stage === 'transmis' && p.transmisLe && diffDays(t, p.transmisLe) >= 5);
+  if (att) out.push({ t: att.nom + ' est transmis depuis ' + diffDays(t, att.transmisLe) + ' jours : fais le point avec Lass.', id: att.id });
+  const ws = weekStats();
+  const obj = Math.max(1, Number(S.settings.objectif) || 10);
+  if (ws.contacts < obj) out.push({ t: 'Cette semaine : ' + ws.contacts + ' nouveau' + (ws.contacts > 1 ? 'x' : '') + ' contact' + (ws.contacts > 1 ? 's' : '') + ' sur ' + obj + '. Il t’en reste ' + (obj - ws.contacts) + '.' });
+  const flou = ps.filter(p => p.type === 'gestion' && !Number(p.lots) && p.stage !== 'a_contacter').length;
+  if (flou >= 2) out.push({ t: 'Pour ' + flou + ' agences, tu ne connais pas encore le nombre de logements gérés. Pose la question : ça change leur note.' });
+  if (ps.filter(p => p.stage === 'a_contacter').length < 3 && openRecos().length) out.push({ t: 'Il te reste peu de prospects à contacter. Ajoute-en parmi les recommandés.' });
+  return out.slice(0, 5);
+}
+
+/* ===== Plateforme : base en ligne, identité, IA, téléchargements ===== */
+const plat = { ready: null, db: null, user: null, downloads: null };
+const ai = { fn: undefined, off: false, ctl: null };
+const cloud = { on: false, retry: false, loaded: false, slow: false, migration: false, shrink: 0, remote: null, flushed: false, writing: new Set(), dirty: new Set(), unsub: [] };
+
+plat.ready = (async () => {
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function') { ai.fn = null; return; }
+  const get = n => Promise.resolve().then(() => c.use(n)).catch(() => null);
+  const res = await Promise.all([get('db'), get('user'), get('sample'), get('downloads')]);
+  plat.db = res[0] || null; plat.user = res[1] || null; ai.fn = res[2] || null; plat.downloads = res[3] || null;
+})();
+
+const aiUsable = () => ai.fn !== null && !ai.off;
+async function runAI(input, opts) {
+  opts = opts || {};
+  if (ai.fn === undefined) await plat.ready;
+  if (!ai.fn || ai.off) throw { code: 'unavailable' };
+  const ctl = new AbortController();
+  ai.ctl = ctl;
+  const o = { signal: ctl.signal, cache: false };
+  if (opts.onText) o.onText = opts.onText;
+  if (opts.tier) o.modelTier = opts.tier;
+  try {
+    return opts.json ? await ai.fn.json(input, o) : await ai.fn(input, o);
+  } catch (e) {
+    if (e && ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].includes(e.code)) ai.off = true;
+    throw e;
+  } finally { if (ai.ctl === ctl) ai.ctl = null; }
+}
+function aiErrorText(e) {
+  switch (e && e.code) {
+    case 'unavailable': case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed':
+      return 'AMELA ne peut pas rédiger sur mesure ici. Les modèles prêts à l’emploi restent accessibles.';
+    case 'not_granted': return 'L’accès à AMELA a été refusé pour cette visite.';
+    case 'rate_limited': return 'Trop de demandes pour l’instant. Réessaie dans quelques minutes.';
+    case 'session_expired': return 'Reconnecte-toi à Claude, puis réessaie.';
+    case 'refused': return 'AMELA ne peut pas répondre à cette demande. Reformule-la.';
+    case 'prompt_too_large': return 'Le texte est trop long. Raccourcis-le et réessaie.';
+    case 'invalid_json': return 'La réponse n’a pas pu être lue. Réessaie.';
+    default: return 'Problème de connexion avec AMELA. Réessaie.';
+  }
+}
+const cleanAI = s => String(s || '').replace(/\*\*/g, '').replace(/^#{1,6}\s*/gm, '').trim();
+
+function applyConfig(d) {
+  if (!d || typeof d !== 'object') return;
+  if (Array.isArray(d.bareme) && d.bareme.length) {
+    /* Lignes acceptées : [plafond, taux] ou { plafond, taux }. Plafonds croissants, dernière ligne sans plafond, 10 % au plus. */
+    const rows = d.bareme.map(b => Array.isArray(b) ? [b[0], b[1]] : (b && typeof b === 'object' ? [b.plafond, b.taux] : null));
+    const ok = rows.every((r, i) => r && typeof r[1] === 'number' && r[1] >= 0 && r[1] <= 0.10001
+      && (i === rows.length - 1 ? r[0] == null : (typeof r[0] === 'number' && r[0] > 0 && (i === 0 || r[0] > rows[i - 1][0]))));
+    if (ok) CONFIG.bareme = rows.map(r => [r[0] == null ? null : Number(r[0]), Number(r[1])]);
+  }
+  if (typeof d.recosVerifiees === 'string') CONFIG.recosVerifiees = d.recosVerifiees;
+  if (typeof d.lassTel === 'string') CONFIG.lassTel = d.lassTel;
+}
+async function loadShared() {
+  if (!plat.db) return;
+  try { const s = await plat.db.doc('config/app').get(); if (s.exists) applyConfig(s.data()); } catch (e) { /* réglages par défaut */ }
+  try {
+    const q = await plat.db.collection('reco').get();
+    if (!q.empty) {
+      const map = new Map(baseRecos().map(r => [r.id, r]));
+      q.docs.forEach(d => { const x = d.data(); if (x && x.nom) map.set(d.id, normalizeReco(Object.assign({}, clone(x), { id: d.id }))); });
+      RECOS = Array.from(map.values());
+    }
+  } catch (e) { /* liste intégrée */ }
+}
+async function canWriteCloud() {
+  if (!plat.db) return false;
+  let r = [null, false, false];
+  if (plat.user) {
+    try { r = await Promise.all([plat.user.can('data.write'), plat.user.isOwner(), plat.user.canEdit()]); } catch (e) { r = [null, false, false]; }
+  }
+  if (r[0] === true || r[1] === true || r[2] === true) return true;
+  if (r[0] === false) return false;
+  /* La plateforme ne dit rien sur ce visiteur : un essai d'écriture décide. */
+  try { await plat.db.doc('app/ping').set({ at: nowStamp() }); return true; } catch (e) { return false; }
+}
+function startCloud() {
+  if (cloud.on || !plat.db) return;
+  cloud.on = true; cloud.loaded = false; cloud.flushed = false; cloud.remote = null;
+  const timer = setTimeout(() => { if (!cloud.loaded) { cloud.slow = true; refresh(); } }, 10000);
+  try {
+    cloud.unsub.push(plat.db.collection('prospects').onSnapshot(snap => {
+      const definitive = !(snap.metadata && snap.metadata.fromCache);
+      if (definitive) { clearTimeout(timer); cloud.loaded = true; cloud.slow = false; }
+      applyCloudProspects(snap, definitive);
+      if (definitive && !cloud.flushed && !cloud.migration) { cloud.flushed = true; flushPending(); }
+    }, err => { clearTimeout(timer); stopCloud(err); }));
+    cloud.unsub.push(plat.db.doc('app/state').onSnapshot(snap => {
+      const definitive = !(snap.metadata && snap.metadata.fromCache);
+      if (cloud.writing.has('__app') || (S.meta.pending && S.meta.pending.__app)) return;
+      if (!snap.exists) { if (definitive && !S.meta.appSynced) { S.meta.appSynced = true; queueWrite('__app'); saveLocal(); } return; }
+      applyCloudApp(snap.data() || {});
+    }, () => {}));
+  } catch (e) { clearTimeout(timer); stopCloud(e); }
+}
+function stopCloud(err) {
+  cloud.unsub.forEach(u => { try { u(); } catch (e) { /* déjà coupé */ } });
+  cloud.unsub = []; cloud.on = false; cloud.slow = false; cloud.migration = false; cloud.shrink = 0; cloud.remote = null;
+  if (err) toast('La sauvegarde en ligne n’est pas accessible. Tes données restent enregistrées sur cet appareil.');
+  refresh();
+}
+/* Réglages partagés. Au premier passage d'un appareil, on complète sans rien écraser de non vide. */
+function applyCloudApp(d) {
+  const rs = d.settings && typeof d.settings === 'object' ? clone(d.settings) : {};
+  const rr = d.reco && typeof d.reco === 'object' ? clone(d.reco) : {};
+  if (S.meta.appSynced) { Object.assign(S.settings, rs); S.reco = rr; }
+  else {
+    let plus = false;
+    Object.keys(S.settings).forEach(k => {
+      const v = rs[k];
+      if (v !== undefined && v !== null && v !== '') S.settings[k] = v;
+      else if (S.settings[k] !== '' && S.settings[k] != null) plus = true;
+    });
+    const merged = Object.assign({}, rr, S.reco);
+    if (Object.keys(merged).length > Object.keys(rr).length) plus = true;
+    S.reco = merged;
+    S.meta.appSynced = true;
+    if (plus) queueWrite('__app');
+  }
+  saveLocal(); refresh();
+}
+function applyCloudProspects(snap, definitive) {
+  const remote = {};
+  snap.docs.forEach(d => { const x = d.data(); if (x && x.id) remote[d.id] = fixStage(clone(x)); });
+  if (cloud.migration) { cloud.remote = remote; return; }
+  if (!S.meta.cloudSynced) {
+    /* Premier passage de cet appareil : rien n'est remplacé sans accord. */
+    if (!definitive) return;
+    if (allProspects().length) { cloud.remote = remote; cloud.migration = true; refresh(); return; }
+  }
+  mergeRemote(remote, definitive);
+}
+function mergeRemote(remote, definitive, force) {
+  const pend = S.meta.pending || {};
+  const mine = id => cloud.writing.has(id) || !!pend[id];
+  if (definitive && !force) {
+    /* Garde-fou : si la version en ligne ferait disparaître d'un coup la plupart des fiches, on demande avant. */
+    const all = Object.keys(S.prospects);
+    const lost = all.filter(id => !remote[id] && !mine(id)).length;
+    if (lost >= 3 && lost > all.length / 2) { cloud.remote = remote; cloud.migration = true; cloud.shrink = lost; refresh(); return; }
+  }
+  const next = {};
+  Object.keys(remote).forEach(id => {
+    if (!mine(id)) next[id] = remote[id];
+    else if (S.prospects[id]) next[id] = S.prospects[id];
+  });
+  /* Une fiche locale absente en ligne est gardée si elle attend d'être envoyée, ou tant que la réponse n'est pas complète. */
+  Object.keys(S.prospects).forEach(id => { if (!next[id] && (mine(id) || !definitive)) next[id] = S.prospects[id]; });
+  S.prospects = next;
+  if (definitive) S.meta.cloudSynced = true;
+  saveLocal(); refresh();
+}
+function flushPending() {
+  Object.keys(S.meta.pending || {}).forEach(k => { if (!cloud.writing.has(k)) queueWrite(k); });
+}
+function queueWrite(key) {
+  /* Tout changement est noté « à envoyer » jusqu'à ce que l'écriture en ligne ait réussi. */
+  if (cloud.on || S.meta.cloudSynced) { S.meta.pending = S.meta.pending || {}; S.meta.pending[key] = 1; saveLocal(); }
+  if (!cloud.on || cloud.migration || !plat.db) return;
+  if (cloud.writing.has(key)) { cloud.dirty.add(key); return; }
+  cloud.writing.add(key);
+  (async () => {
+    let ok = false;
+    try {
+      do {
+        cloud.dirty.delete(key);
+        if (key === '__app') await plat.db.doc('app/state').set({ settings: clone(S.settings), reco: clone(S.reco), updatedAt: nowStamp() });
+        else {
+          const p = S.prospects[key];
+          const ref = plat.db.doc('prospects/' + key);
+          if (p) await ref.set(clone(p)); else await ref.delete();
+        }
+      } while (cloud.dirty.has(key));
+      ok = true;
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'quota_exceeded') toast('La sauvegarde en ligne est pleine. Préviens Lass.');
+      else if (code === 'unavailable' || code === 'resource_exhausted') toast('Connexion instable : la modification est gardée sur cet appareil et sera envoyée plus tard.');
+      else stopCloud(e);
+    } finally {
+      cloud.writing.delete(key); cloud.dirty.delete(key);
+      if (ok && S.meta.pending && S.meta.pending[key]) { delete S.meta.pending[key]; saveLocal(); }
+    }
+  })();
+}
+/* Mise en ligne des fiches de cet appareil : la version la plus récente de chaque fiche est gardée. */
+function takeRemote() {
+  const remote = cloud.remote || {};
+  cloud.migration = false; cloud.shrink = 0; cloud.remote = null; cloud.flushed = true;
+  mergeRemote(remote, true, true);
+  flushPending();
+}
+function pushAllToCloud() {
+  const remote = cloud.remote || {};
+  cloud.migration = false; cloud.shrink = 0; cloud.remote = null;
+  S.meta.cloudSynced = true; cloud.flushed = true;
+  Object.keys(remote).forEach(id => {
+    const l = S.prospects[id];
+    if (!l || String(remote[id].updatedAt || '') > String(l.updatedAt || '')) S.prospects[id] = remote[id];
+  });
+  Object.keys(S.prospects).forEach(id => { if (S.prospects[id] !== remote[id]) queueWrite(id); });
+  queueWrite('__app');
+  saveLocal(); refresh();
+}
+
+/* ===== Enregistrer un changement ===== */
+function touch() { S.meta.changes = (Number(S.meta.changes) || 0) + 1; }
+function commitProspect(id) {
+  const p = S.prospects[id];
+  if (p) p.updatedAt = nowStamp();
+  touch(); saveLocal(); queueWrite(id);
+}
+function commitApp() { touch(); saveLocal(); queueWrite('__app'); }
+function addLog(p, kind, text) { p.log = p.log || []; p.log.unshift({ t: nowStamp(), kind, text: String(text || '').trim().slice(0, 2000) }); if (p.log.length > 60) p.log.length = 60; }
+function estDejaClient(p) {
+  const noms = String(S.settings.clients || '').split(/[\n,;]+/).map(s => s.trim().toLowerCase()).filter(s => s.length >= 3);
+  const n = String(p.nom || '').toLowerCase();
+  return !!n && noms.some(c => n.includes(c));
+}
+function checkDejaClient(p) { p.dejaClient = estDejaClient(p); return p.dejaClient; }
+function setStage(p, id) {
+  if (p.stage === id) return;
+  p.stage = id;
+  const st = stageOf(id);
+  if (st) {
+    addLog(p, 'note', 'Étape : ' + st.label + '.');
+    p.next = { text: st.next, date: addDays(todayISO(), st.delay) };
+  }
+}
+
+/* ===== Sauvegarde ===== */
+function backupText() {
+  const copy = clone(S); copy.chat = [];
+  return JSON.stringify({ app: 'amela-prospection', v: 1, exportedAt: nowStamp(), state: copy });
+}
+function parseBackup(txt) {
+  const d = JSON.parse(String(txt || '').trim());
+  if (!d || d.app !== 'amela-prospection' || !d.state || d.state.v !== 1) throw new Error('format');
+  return mergeState(d.state);
+}
+function csvText() {
+  const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
+  const head = ['Entreprise', 'Type', 'Ville', 'Adresse', 'Téléphone', 'E-mail', 'Contact', 'Rôle', 'Étape', 'Note', 'Prochaine action', 'Date', 'Logements gérés', 'Transmis le', 'Créé le'];
+  const lines = allProspects().map(p => { const q = qualify(p); return [p.nom, TYPES[p.type] || '', p.ville, p.adresse, p.tel, p.email, p.contactNom, p.contactRole, stageLabel(p.stage), q.grade + ' ' + q.score, p.next ? p.next.text : '', p.next ? p.next.date : '', p.lots || '', p.transmisLe || '', String(p.createdAt || '').slice(0, 10)].map(cell).join(';'); });
+  return '﻿' + [head.map(cell).join(';')].concat(lines).join('\r\n');
+}
+async function copyText(txt) {
+  try { await navigator.clipboard.writeText(txt); return true; } catch (e) { return false; }
+}
+
+/* ===== Interface ===== */
+const UI = { tab: 'accueil', sheet: null, filter: 'tous', q: '', recoFilter: 'tous', recoAll: false, ctx: '', chatBusy: false, chatStream: '', advice: '', adviceBusy: false, avisBusy: '', avisStream: '', commune: 'Montpellier' };
+const TABS = ['accueil', 'prospects', 'agent', 'assistante', 'outils'];
+
+const IC = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  back: '<path d="m14.5 5-7 7 7 7"/>',
+  go: '<path d="m9.5 5 7 7-7 7"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  phone: '<path d="M7 3.500h3l1.500 4.500-2 1.500a12 12 0 0 0 5 5l1.500-2 4.500 1.500v3a2 2 0 0 1-2 2C11 19 5 13 5 5.500a2 2 0 0 1 2-2z"/>',
+  mail: '<rect x="3.500" y="5.500" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/>',
+  chat: '<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4.500 3.500V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>',
+  globe: '<circle cx="12" cy="12" r="8.500"/><path d="M3.500 12h17M12 3.500c2.500 2.500 2.500 14.500 0 17M12 3.500c-2.500 2.500-2.500 14.500 0 17"/>',
+  pin: '<path d="M12 21s6.500-6 6.500-11a6.500 6.500 0 0 0-13 0C5.500 15 12 21 12 21z"/><circle cx="12" cy="10" r="2.300"/>',
+  spark: '<path d="M12 4l1.800 4.700L18.500 10.500l-4.700 1.800L12 17l-1.800-4.700L5.500 10.500l4.700-1.800z"/><path d="M18.500 16.500v3M17 18h3"/>'
+};
+const ic = n => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + IC[n] + '</svg>';
+
+let toastTimer = 0;
+function toast(msg) {
+  const el = $('#toast');
+  if (!el) return;
+  el.innerHTML = '<span></span>';
+  el.firstChild.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.innerHTML = ''; }, 3800);
+}
+
+function currentTab() { const h = (location.hash || '').replace('#', ''); return TABS.includes(h) ? h : 'accueil'; }
+function go(tab) {
+  UI.tab = TABS.includes(tab) ? tab : 'accueil';
+  UI.sheet = null;
+  renderSheet(); render();
+  const v = $('#view'); if (v) v.scrollTop = 0;
+  try { if (currentTab() !== UI.tab) location.hash = UI.tab; } catch (e) { /* navigation interne seulement */ }
+}
+
+function render() {
+  const map = { accueil: viewAccueil, prospects: viewProspects, agent: viewAgent, assistante: viewAssistante, outils: viewOutils };
+  setHTML($('#view'), (map[UI.tab] || viewAccueil)());
+  document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === UI.tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  updateChrome();
+}
+function refresh() {
+  const act = document.activeElement;
+  const keep = act && act.id && (act.tagName === 'INPUT' || act.tagName === 'TEXTAREA') ? { id: act.id, value: act.value, a: act.selectionStart, b: act.selectionEnd } : null;
+  const inSheetForm = act && act.closest && act.closest('#sheet form');
+  const inViewForm = act && act.closest && act.closest('#view form');
+  if (!inViewForm) render();
+  if (UI.sheet && !inSheetForm) renderSheet();
+  if (keep) {
+    const el = document.getElementById(keep.id);
+    if (el && el !== act) { el.value = keep.value; try { el.focus(); el.setSelectionRange(keep.a, keep.b); } catch (e) { /* champ sans sélection */ } }
+  }
+}
+function updateChrome() {
+  const chip = $('#syncChip');
+  if (chip) {
+    const live = cloud.on && !cloud.migration;
+    chip.className = 'sync' + (live ? ' cloud' : '');
+    chip.innerHTML = '<span class="dot"></span><span></span>';
+    chip.lastChild.textContent = live ? (cloud.slow ? 'Connexion…' : 'En ligne') : 'Sur cet appareil';
+  }
+  const n = getTasks().filter(x => x.kind === 'due').length;
+  const a = document.querySelector('.tabs a[data-tab="accueil"] .badge');
+  if (a) { a.hidden = !n; a.textContent = n > 9 ? '9+' : String(n); }
+}
+const count = () => allProspects().length;
+const gradeBadge = q => q.blocked ? '<span class="pill lost">Déjà client</span>' : `<span class="grade ${q.grade}" title="Note ${q.score} sur 100">${q.grade}</span>`;
+
+function rail(stage) {
+  const i = stage === 'perdu' ? -1 : stageIndex(stage);
+  let h = '';
+  STAGES.forEach((s, k) => {
+    if (k) h += `<b class="${k <= i ? 'done' : ''}"></b>`;
+    h += `<i class="${k < i ? 'done' : k === i ? 'now' : ''}"></i>`;
+  });
+  const lab = stage === 'perdu' ? 'Perdu ou plus tard' : 'Étape ' + (i + 1) + ' sur ' + STAGES.length + ', ' + stageLabel(stage);
+  return `<div class="rail${stage === 'perdu' ? ' lost' : ''}" role="img" aria-label="${esc(lab)}">${h}</div>`;
+}
+function metaLine(p) {
+  return [TYPES[p.type] || '', RESEAUX[p.reseau] || '', p.ville || ''].filter(Boolean).map(esc).join(' · ');
+}
+function nextLine(p) {
+  if (p.next && p.next.date) {
+    const late = p.next.date < todayISO();
+    return `<span class="pnext${late ? ' late' : ''}">${esc(p.next.text || 'À suivre')} · ${esc(relDay(p.next.date))}</span>`;
+  }
+  return '<span class="pnext none">Aucune suite prévue</span>';
+}
+
+/* ===== Aujourd'hui ===== */
+function welcomeCard() {
+  if (S.profile.named) return '';
+  return `<form class="card gold" data-form="welcome"><h2>Bienvenue</h2>
+    <p>Cet outil t’aide à trouver des clients pour AMELA CONCEPT, étape par étape. Comment t’appelles-tu ?</p>
+    <div class="field"><label for="w-prenom">Ton prénom</label><input type="text" id="w-prenom" name="prenom" autocomplete="given-name" maxlength="40"></div>
+    <div class="row"><button class="btn" type="submit">C’est parti</button></div></form>`;
+}
+function storageWarning() {
+  if (mem.lsOk || cloud.on) return '';
+  return `<div class="notice warn"><strong>Rien ne s’enregistre ici.</strong> Ton navigateur bloque la mémoire de cette page : ce que tu saisis sera perdu à la fermeture. Fais une sauvegarde avant de quitter.<div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button></div></div>`;
+}
+function migrationCard() {
+  if (!cloud.migration) return '';
+  if (cloud.shrink) {
+    return `<div class="card gold"><h3>La sauvegarde en ligne a changé</h3><p>${cloud.shrink} fiches de cet appareil n’existent plus en ligne. Elles ont peut-être été supprimées depuis un autre appareil.</p>
+    <div class="row"><button type="button" class="btn" data-action="migrate">Garder mes fiches</button><button type="button" class="btn ghost" data-action="take-remote">Prendre la version en ligne</button><button type="button" class="btn ghost" data-action="migrate-later">Plus tard</button></div></div>`;
+  }
+  const n = count();
+  return `<div class="card gold"><h3>Mettre tes prospects en ligne ?</h3><p>${n} prospect${n > 1 ? 's sont enregistrés' : ' est enregistré'} sur cet appareil. En ligne, tu les retrouves partout et Lass peut suivre ton avancée.</p>
+    <div class="row"><button type="button" class="btn" data-action="migrate">Envoyer en ligne</button><button type="button" class="btn ghost" data-action="migrate-later">Plus tard</button></div></div>`;
+}
+function onboardingCard() {
+  if (S.onboarding.masque) return '';
+  const steps = [
+    [S.onboarding.guide, 'Lire la présentation d’AMELA CONCEPT', 'sheet', 'guide'],
+    [count() >= 5, 'Ajouter cinq prospects recommandés', 'tab', 'agent'],
+    [S.onboarding.assistante, 'Préparer ton premier appel avec AMELA', 'tab', 'assistante'],
+    [allProspects().some(p => firstContact(p)), 'Noter ton premier contact', 'tab', 'prospects']
+  ];
+  if (steps.every(s => s[0])) return '';
+  const done = steps.filter(s => s[0]).length;
+  const items = steps.map(s => `<li class="check${s[0] ? ' done' : ''}"><span class="box">${ic('check')}</span>${s[0] ? `<span class="txt">${s[1]}</span>` : `<button type="button" class="txt" data-action="${s[2]}" data-${s[2] === 'tab' ? 'tab' : 'type'}="${s[3]}">${s[1]}</button>`}</li>`).join('');
+  return `<section class="card"><div class="sec-head"><h2>Pour bien démarrer</h2><span class="count">${done} sur 4</span></div><ul class="stack">${items}</ul>
+    <div><button type="button" class="linkbtn" data-action="onb-hide">Masquer cette liste</button></div></section>`;
+}
+function taskRow(x) {
+  const late = x.kind === 'due' && x.date < todayISO();
+  const when = x.kind === 'due' ? relDay(x.date) : x.kind === 'new' ? 'à lancer' : 'à planifier';
+  return `<button type="button" class="task${late ? ' late' : ''}" data-action="open" data-id="${esc(x.p.id)}"><span class="t-main"><span class="t-name">${esc(x.p.nom)}</span><span class="t-what">${esc(x.text)}</span></span><span class="t-when">${esc(when)}</span></button>`;
+}
+function viewAccueil() {
+  const tasks = getTasks();
+  const due = tasks.filter(x => x.kind === 'due');
+  const fresh = tasks.filter(x => x.kind === 'new').slice(0, 3);
+  const noplan = tasks.filter(x => x.kind === 'noplan').slice(0, 3);
+  const ws = weekStats();
+  const obj = Math.max(1, Number(S.settings.objectif) || 10);
+  const ct = commissionTotals();
+  const name = S.profile.prenom ? ', ' + esc(S.profile.prenom) : '';
+  let lede;
+  if (!count()) lede = 'Ton outil est prêt. Commence par choisir tes premiers prospects.';
+  else if (!due.length) lede = 'Rien d’urgent aujourd’hui. Profites-en pour ouvrir de nouveaux contacts.';
+  else lede = due.length === 1 ? 'Une action t’attend aujourd’hui.' : due.length + ' actions t’attendent aujourd’hui.';
+  let h = `<header class="stack"><p class="eyebrow">${esc(cap(F_LONG.format(new Date())))}</p><h1>Bonjour${name}</h1><p class="lede">${lede}</p></header>`;
+  h += welcomeCard() + storageWarning() + migrationCard() + onboardingCard();
+
+  if (due.length || fresh.length || noplan.length) {
+    h += `<section class="sec"><div class="sec-head"><h2>À faire aujourd’hui</h2><span class="count">${due.length} action${due.length > 1 ? 's' : ''}</span></div>`;
+    h += due.map(taskRow).join('');
+    if (!due.length) h += '<p class="muted">Aucune relance prévue aujourd’hui.</p>';
+    if (fresh.length) h += '<p class="small muted">Nouveaux prospects à lancer</p>' + fresh.map(taskRow).join('');
+    if (noplan.length) h += '<p class="small muted">Sans suite prévue : choisis la prochaine action</p>' + noplan.map(taskRow).join('');
+    h += '</section>';
+  }
+
+  const recos = openRecos().slice(0, 3);
+  if (recos.length && (count() < 5 || !due.length)) {
+    h += `<section class="sec"><div class="sec-head"><h2>L’agent te propose</h2><button type="button" class="linkbtn" data-action="tab" data-tab="agent">Tout voir</button></div>${recos.map(x => recoCard(x, true)).join('')}</section>`;
+  }
+
+  const pc = Math.min(100, Math.round(ws.contacts / obj * 100));
+  h += `<section class="sec"><h2>Cette semaine</h2>
+    <div class="card"><div class="row between"><span>Nouveaux contacts</span><strong>${ws.contacts} sur ${obj}</strong></div><div class="bar" role="img" aria-label="${ws.contacts} nouveaux contacts sur ${obj}"><span style="width:${pc}%"></span></div>
+    <p class="small muted">${ws.echanges} échange${ws.echanges > 1 ? 's' : ''} noté${ws.echanges > 1 ? 's' : ''} · ${ws.rdv} rendez-vous</p></div></section>`;
+
+  const counts = {};
+  allProspects().forEach(p => { counts[p.stage] = (counts[p.stage] || 0) + 1; });
+  h += `<section class="sec"><h2>Ton parcours</h2><div class="card"><div class="funnel">${STAGES.map(s => `<button type="button" data-action="filter-go" data-f="${s.id}"><span class="n${counts[s.id] ? '' : ' zero'}">${counts[s.id] || 0}</span><span class="l">${esc(s.label)}</span></button>`).join('')}</div></div></section>`;
+
+  h += `<section class="sec"><div class="sec-head"><h2>Tes commissions</h2><button type="button" class="linkbtn" data-action="sheet" data-type="commissions">Détail</button></div>
+    <div class="kpis"><div class="kpi"><div class="n">${fmtEur(ct.gagne)}</div><div class="l">à recevoir</div></div><div class="kpi"><div class="n">${fmtEur(ct.avenir)}</div><div class="l">à venir</div></div><div class="kpi"><div class="n">${fmtEur(ct.recu)}</div><div class="l">déjà reçu</div></div></div></section>`;
+
+  if (!cloud.on && count() && S.meta.changes > 0 && (!S.meta.lastBackup || diffDays(todayISO(), S.meta.lastBackup) >= 7)) {
+    h += `<section class="card soft"><h3>Pense à ta sauvegarde</h3><p class="small">Tes prospects sont enregistrés sur cet appareil seulement. ${S.meta.lastBackup ? 'Dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) + '.' : 'Aucune sauvegarde pour l’instant.'}</p><div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button></div></section>`;
+  }
+  return h;
+}
+
+/* ===== Prospects ===== */
+function pcard(p) {
+  const q = qualify(p);
+  return `<button type="button" class="pcard" data-action="open" data-id="${esc(p.id)}">
+    <span class="row between"><span class="pname grow">${esc(p.nom)}</span>${gradeBadge(q)}</span>
+    <span class="pmeta">${metaLine(p)}</span>${rail(p.stage)}
+    <span class="row between"><span class="pill${p.stage === 'perdu' ? ' lost' : ''}">${esc(stageLabel(p.stage))}</span>${nextLine(p)}</span></button>`;
+}
+function prospectList() {
+  const q = UI.q.trim().toLowerCase();
+  let list = allProspects().filter(p => UI.filter === 'tous' ? p.stage !== 'perdu' : p.stage === UI.filter);
+  if (q) list = list.filter(p => [p.nom, p.ville, p.contactNom, p.adresse].join(' ').toLowerCase().includes(q));
+  list.sort((a, b) => String((a.next && a.next.date) || '9999').localeCompare(String((b.next && b.next.date) || '9999')) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  if (list.length) return list.map(pcard).join('');
+  if (!count()) return `<div class="card"><h3>Aucun prospect pour l’instant</h3><p class="muted">Commence par ceux que l’agent te recommande : ils sont déjà choisis pour AMELA CONCEPT.</p><div class="row"><button type="button" class="btn" data-action="tab" data-tab="agent">Voir les recommandations</button><button type="button" class="btn ghost" data-action="add">Ajouter le mien</button></div></div>`;
+  return '<p class="muted">Aucun prospect ne correspond.</p>';
+}
+function viewProspects() {
+  const counts = { tous: 0 };
+  allProspects().forEach(p => { counts[p.stage] = (counts[p.stage] || 0) + 1; if (p.stage !== 'perdu') counts.tous++; });
+  const chips = [['tous', 'En cours']].concat(STAGES.map(s => [s.id, s.label]), [['perdu', 'Perdus']])
+    .map(c => `<button type="button" class="chip" data-action="filter" data-f="${c[0]}" aria-pressed="${UI.filter === c[0]}">${esc(c[1])} ${counts[c[0]] || 0}</button>`).join('');
+  return `<header class="stack"><h1>Mes prospects</h1><p class="lede">Chaque prospect avance sur quatre étapes, du premier appel au premier chantier.</p></header>
+    <div class="field"><label for="q">Rechercher</label><input type="search" id="q" value="${esc(UI.q)}" placeholder="Nom, ville ou contact" autocomplete="off"></div>
+    <div class="chips" role="group" aria-label="Filtrer par étape">${chips}</div>
+    <div id="plist" class="stack">${prospectList()}</div>
+    <div style="height:56px"></div>
+    <button type="button" class="btn fab" data-action="add">${ic('plus')}Ajouter</button>`;
+}
+
+/* ===== Agent ===== */
+function recoCard(x, compact) {
+  const r = x.r, q = x.q;
+  const coords = [r.tel, r.adresse || r.ville].filter(Boolean).map(esc).join(' · ');
+  const lien = r.sourceUrl ? `<a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer">Source : ${esc(r.sourceLabel || 'voir')}</a> · ` : '';
+  const src = `<p class="small muted">${lien}vérifiée le ${esc(r.verifieLe || CONFIG.recosVerifiees)}</p>`;
+  const neuf = recoNew(r) ? '<span class="pill new">Nouveau</span>' : '';
+  if (compact) {
+    return `<article class="card reco"><div class="row between"><h3 class="grow">${esc(r.nom)}</h3>${neuf}${gradeBadge(q)}</div>
+      <p class="pmeta">${[TYPES[r.type], RESEAUX[r.reseau], r.ville].filter(Boolean).map(esc).join(' · ')}</p>
+      <p class="small">${esc(r.pourquoi[0] || '')}</p>
+      <div class="row"><button type="button" class="btn sm" data-action="reco-add" data-id="${esc(r.id)}">${ic('plus')}Ajouter</button></div></article>`;
+  }
+  return `<article class="card reco"><div class="row between"><h3 class="grow">${esc(r.nom)}</h3>${neuf}<span class="grade ${q.grade}">${q.grade} · ${q.score}</span></div>
+    <p class="pmeta">${[TYPES[r.type], RESEAUX[r.reseau], r.ville].filter(Boolean).map(esc).join(' · ')}</p>
+    <ul class="why">${r.pourquoi.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    ${r.conseil ? `<p class="tip"><strong>Conseil :</strong> ${esc(r.conseil)}</p>` : ''}
+    ${coords ? `<p class="coords">${coords}</p>` : '<p class="coords muted">Coordonnées à compléter.</p>'}
+    <div class="row"><button type="button" class="btn sm" data-action="reco-add" data-id="${esc(r.id)}">${ic('plus')}Ajouter à mes prospects</button><button type="button" class="btn ghost sm" data-action="reco-skip" data-id="${esc(r.id)}">Pas pour moi</button></div>${src}</article>`;
+}
+function searchLinks() {
+  return RECHERCHES.map(t => `<a href="https://www.google.com/maps/search/${encodeURIComponent(t + ' ' + UI.commune)}" target="_blank" rel="noopener noreferrer"><span>${esc(cap(t))} à ${esc(UI.commune)}</span>${ic('go')}</a>`).join('');
+}
+function viewAgent() {
+  const ins = agentInsights();
+  const recos = openRecos();
+  const filt = { tous: () => true, neufs: x => recoNew(x.r), A: x => x.q.grade === 'A', indep: x => x.r.reseau === 'independant', tel: x => !!x.r.tel };
+  const nNeufs = recos.filter(filt.neufs).length;
+  if (UI.recoFilter === 'neufs' && !nNeufs) UI.recoFilter = 'tous';
+  const list = recos.filter(filt[UI.recoFilter] || filt.tous);
+  const shown = UI.recoAll ? list : list.slice(0, 5);
+  const chips = [['tous', 'Tous']].concat(nNeufs ? [['neufs', 'Nouveaux ' + nNeufs]] : [], [['A', 'Notés A'], ['indep', 'Indépendantes'], ['tel', 'Avec téléphone']])
+    .map(c => `<button type="button" class="chip" data-action="reco-filter" data-f="${c[0]}" aria-pressed="${UI.recoFilter === c[0]}">${c[1]}</button>`).join('');
+  let h = `<header class="stack"><h1>L’agent commercial</h1><p class="lede">Il te dit qui appeler en premier et te propose des entreprises qui confient souvent des travaux.</p></header>`;
+  h += `<section class="sec"><h2>Ce que l’agent remarque</h2><div class="card">${ins.map((x, i) => `<div class="insight"><span class="num">${i + 1}</span><span class="grow">${esc(x.t)}${x.id ? ` <button type="button" class="linkbtn" data-action="open" data-id="${esc(x.id)}">Ouvrir</button>` : ''}</span></div>`).join('')}
+    ${count() ? (aiUsable() ? `<div class="row"><button type="button" class="btn ghost sm" data-action="advice"${UI.adviceBusy ? ' disabled' : ''}>${ic('spark')}Demander un plan pour la semaine</button>${UI.adviceBusy ? '<button type="button" class="btn ghost sm" data-action="ai-stop">Arrêter</button>' : ''}</div>` : `<div class="row"><button type="button" class="btn ghost sm" data-action="bridge-advice">${ic('spark')}Plan de la semaine avec une IA</button></div>`) : ''}
+    ${UI.advice || UI.adviceBusy ? `<div class="aiout" id="agent-out">${esc(UI.advice || 'L’agent réfléchit…')}</div>` : ''}</div></section>`;
+  h += `<section class="sec"><div class="sec-head"><h2>Recommandés pour toi</h2><span class="count">${recos.length} à voir</span></div>
+    <p class="small muted">Chaque fiche a été vérifiée sur la source indiquée. Vérifie quand même le numéro avant d’appeler.</p>
+    <div class="chips" role="group" aria-label="Filtrer les recommandations">${chips}</div>
+    ${shown.length ? shown.map(x => recoCard(x)).join('') : '<p class="muted">Tu as vu toutes les recommandations de cette liste. Cherche-en d’autres juste en dessous, ou demande à Lass d’en faire ajouter.</p>'}
+    ${list.length > shown.length ? `<button type="button" class="btn ghost" data-action="reco-more">Voir les ${list.length - shown.length} autres</button>` : ''}</section>`;
+  h += `<section class="sec"><h2>En trouver d’autres</h2><div class="card">
+    <p>Cherche sur Google Maps, puis ajoute ceux qui t’intéressent.</p>
+    <div class="field"><label for="commune">Dans quelle ville ?</label><select id="commune">${COMMUNES.map(c => `<option${c === UI.commune ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+    <div class="links" id="slinks">${searchLinks()}</div>
+    <div class="row">${aiUsable() ? `<button type="button" class="btn sm" data-action="coller">${ic('spark')}Coller une fiche trouvée</button>` : ''}<button type="button" class="btn ghost sm" data-action="add">Ajouter à la main</button></div></div></section>`;
+  h += `<section class="sec"><h2>Qui viser</h2><div class="card">${SEGMENTS.map(s => `<div><h3>${esc(s[0])}</h3><p class="small muted">${esc(s[1])}</p></div>`).join('')}
+    <div class="notice"><strong>À éviter :</strong> les entreprises qui ont déjà leur société de travaux, et celles qui disent ne pas vouloir être démarchées. Note-le dans la fiche et n’insiste pas.</div>
+    <div class="notice warn"><strong>Jamais de démarchage de particuliers.</strong> Appeler un particulier pour lui proposer des travaux sans son accord est interdit depuis le 11 août 2026. Tu prospectes des professionnels ; pour un particulier, attends qu’il te le demande.</div></div></section>`;
+  h += `<section class="sec"><h2>Comment l’agent note</h2><div class="card small"><p>La note va de 0 à 100. Elle monte quand l’entreprise a souvent des travaux à confier (gestion locative, logements étudiants, beaucoup de logements gérés), quand la décision se prend sur place, et quand tu connais ton contact.</p><p><span class="grade A">A</span> à partir de 70 : à appeler en premier. <span class="grade B">B</span> de 50 à 69. <span class="grade C">C</span> en dessous.</p></div></section>`;
+  return h;
+}
+
+/* ===== Assistante ===== */
+const QUICK = [
+  { id: 'premier', label: 'Premier message', prompt: 'Écris un premier message de prise de contact pour ce prospect. Donne deux versions : 1) un e-mail court avec son objet, 2) un message WhatsApp ou SMS de quatre lignes au plus. Présente AMELA CONCEPT en une phrase, cite un ou deux points forts utiles à ce prospect, et termine par une proposition simple : dix minutes au téléphone, ou un passage sur place. Aucun prix.' },
+  { id: 'appel', label: 'Script d’appel', prompt: 'Écris un script d’appel téléphonique simple pour ce prospect, à lire presque mot pour mot : 1) la phrase pour demander la bonne personne à l’accueil, 2) la présentation en 20 secondes, 3) les trois questions, 4) la proposition d’un rendez-vous ou d’une visite de Lass, 5) la phrase de fin. Ajoute quoi répondre si on me dit « envoyez-nous un mail » ou « on a déjà nos artisans ». Aucun prix.' },
+  { id: 'rdv', label: 'Préparer mon rendez-vous', prompt: 'Prépare mon rendez-vous avec ce prospect : l’objectif en une phrase, ce que j’apporte, le déroulé en cinq étapes, les questions à poser, les objections probables avec ma réponse, et ce que je dois noter avant de partir.' },
+  { id: 'relance', label: 'Relancer', prompt: 'Écris un message de relance court et poli pour ce prospect, en tenant compte de nos derniers échanges. Donne une version e-mail et une version WhatsApp ou SMS. Propose une suite précise. Aucun prix.' },
+  { id: 'objection', label: 'Répondre à une objection', ask: 'Quelle objection as-tu entendue ?', ph: 'Exemple : on a déjà nos artisans', prompt: 'On m’a fait cette objection : « {x} ». Donne-moi une réponse courte à dire à l’oral, puis une variante par écrit. Aucun prix.' },
+  { id: 'cr', label: 'Compte rendu de rendez-vous', special: 'cr' },
+  { id: 'lass', label: 'Message pour Lass', special: 'lass' },
+  { id: 'mot', label: 'Expliquer un mot', ask: 'Quel mot ou quelle expression ?', ph: 'Exemple : ordre de service', prompt: 'Explique-moi simplement, en trois phrases au plus, ce que veut dire « {x} » dans l’immobilier ou le bâtiment, et en quoi ça me sert pour prospecter.' }
+];
+const TPL = {
+  premier(p) {
+    const c = p && p.contactNom ? ' ' + p.contactNom : '';
+    const moi = S.profile.prenom || '[ton prénom]';
+    return 'E-MAIL\nObjet : Vos travaux de rénovation intérieure\n\nBonjour' + c + ',\n\nJe vous contacte pour AMELA CONCEPT, une entreprise de rénovation intérieure et de finitions installée à Baillargues : peinture, placo et cloisons, sols, salles de bain et WC, électricité.\n\nVous avez un seul interlocuteur pour tous les travaux, et un devis clair et détaillé sous 24 à 48 h après la visite ou l’envoi de photos.\n\nAuriez-vous dix minutes cette semaine pour en parler ?\n\nCordialement,\n' + moi + '\nPour AMELA CONCEPT\n\n\nWHATSAPP OU SMS\nBonjour' + c + ', ' + moi + ' pour AMELA CONCEPT, entreprise de rénovation intérieure à Baillargues : peinture, sols, placo, salles de bain, électricité. Un seul interlocuteur, et un devis détaillé sous 24 à 48 h. Puis-je vous appeler dix minutes cette semaine ?';
+  },
+  appel() {
+    const moi = S.profile.prenom || '[ton prénom]';
+    const ob = AMELA.objections;
+    return 'À L’ACCUEIL\n« Bonjour, ' + moi + ' pour AMELA CONCEPT. Je cherche la personne qui s’occupe des travaux. Vous pouvez me la passer ? »\n\nTA PRÉSENTATION\n« Bonjour, ' + moi + '. ' + AMELA.accroche + ' »\n\nLES TROIS QUESTIONS\n1. ' + AMELA.questions[0] + '\n2. ' + AMELA.questions[1] + '\n3. ' + AMELA.questions[2] + '\n\nLA PROPOSITION\n« Le plus simple : le gérant, Lass, passe vous voir, ou vous lui envoyez des photos et il vous fait un devis. »\n\nPOUR FINIR\n« Je peux passer vous voir dix minutes. Plutôt en début ou en fin de semaine ? »\n\nSI ON TE DIT « ENVOYEZ-NOUS UN MAIL »\n« ' + ob[1][1] + ' »\n\nSI ON TE DIT « ON A DÉJÀ NOS ARTISANS »\n« ' + ob[0][1] + ' »';
+  },
+  rdv() {
+    return 'TON OBJECTIF\nRepartir avec un chantier à chiffrer, ou au moins une date pour le prochain échange.\n\nCE QUE TU APPORTES\n- La présentation d’AMELA CONCEPT (onglet Outils).\n- L’attestation d’assurance d’AMELA CONCEPT : demande-la à Lass avant.\n- De quoi noter.\n\nLE DÉROULÉ\n1. Remercie et rappelle en une phrase pourquoi tu es là.\n2. Pose les trois questions et écoute. Note les réponses.\n3. Présente AMELA CONCEPT : ce qu’elle fait, et ses trois points forts.\n4. Si on te demande un prix : c’est Lass qui chiffre, le devis arrive sous 24 à 48 h.\n5. Propose la suite : une visite de Lass, ou l’envoi de photos pour un devis.\n\nAVANT DE PARTIR, NOTE\n- Le nom et le rôle de ton contact.\n- Les travaux qu’ils font faire, et à quel rythme.\n- Le prochain chantier possible.\n\nENSUITE\nTransmets le contact à Lass par écrit le jour même : c’est ce qui date ton apport.';
+  },
+  relance(p) {
+    const c = p && p.contactNom ? ' ' + p.contactNom : '';
+    const moi = S.profile.prenom || '[ton prénom]';
+    return 'E-MAIL\nObjet : AMELA CONCEPT, suite à notre échange\n\nBonjour' + c + ',\n\nJe reviens vers vous après notre échange au sujet d’AMELA CONCEPT.\n\nAvez-vous des travaux prévus dans les prochaines semaines ? Vous pouvez avoir un devis détaillé sous 24 à 48 h après une visite ou l’envoi de photos.\n\nJe vous rappelle dans quelques jours pour faire le point.\n\nCordialement,\n' + moi + '\nPour AMELA CONCEPT\n\n\nWHATSAPP OU SMS\nBonjour' + c + ', ' + moi + ' pour AMELA CONCEPT. Avez-vous des travaux prévus bientôt ? Vous pouvez avoir un devis détaillé sous 24 à 48 h. Je vous rappelle dans quelques jours.';
+  },
+  objection() {
+    return AMELA.objections.map(o => '« ' + o[0] + ' »\n' + o[1]).join('\n\n');
+  },
+  mot(p, x) {
+    const k = String(x || '').toLowerCase();
+    const hit = LEXIQUE.find(l => l[0].toLowerCase().includes(k) || k.includes(l[0].toLowerCase()));
+    return hit ? hit[0] + ' : ' + hit[1] : 'Ce mot n’est pas dans le lexique de l’application. Demande à Lass, ou regarde dans Outils, Lexique.';
+  }
+};
+function kbText() {
+  return [
+    'Tu es AMELA, l’assistante commerciale de l’entreprise de rénovation intérieure AMELA CONCEPT.',
+    'Tu aides ' + (S.profile.prenom || 'l’utilisatrice') + ', apporteuse d’affaires débutante, à obtenir des rendez-vous et des chantiers pour AMELA CONCEPT.',
+    'Règles : réponds en français, tutoie-la, phrases courtes, mots simples, pas de jargon. Donne des textes prêts à copier. Écris en texte simple avec des retours à la ligne : pas de gras, pas de tableau, pas de titres avec des dièses.',
+    'Ne donne jamais de prix, de tarif ni de délai ferme : les prix et les devis, c’est Lass, le gérant. N’invente aucun engagement, aucune offre et aucune référence client. Si une information manque, dis-le et conseille de demander à Lass.',
+    'Ne cite jamais une entreprise précise qu’elle ne t’a pas donnée : tu ne peux pas vérifier qu’elle existe.',
+    'Elle prospecte uniquement des professionnels (agences, syndics, entreprises). Ne propose jamais de démarcher un particulier par téléphone ou par message sans son accord préalable : c’est interdit en France depuis le 11 août 2026.',
+    'Son rôle : elle présente AMELA CONCEPT et met en relation. Les visites, les devis, les prix et la signature, c’est Lass. Elle transmet chaque contact à Lass par écrit.',
+    '',
+    'FICHE AMELA CONCEPT',
+    AMELA.phrase,
+    AMELA.fiche.map(f => f[0] + ' : ' + f[1]).join(' | '),
+    'Travaux réalisés : ' + AMELA.travaux.join(', ').toLowerCase() + '. ' + AMELA.pasFait,
+    'Points forts : ' + AMELA.atouts.map((a, i) => (i + 1) + '. ' + a[0] + ', ' + a[1]).join(' '),
+    'Durées moyennes de chantier, selon la surface (indicatives, jamais un engagement) : ' + AMELA.durees.map(x => x[0].toLowerCase() + ', ' + x[1]).join(' ; ') + '.',
+    'Présentation en 20 secondes : ' + AMELA.accroche,
+    'Trois questions à poser : ' + AMELA.questions.join(' / '),
+    'Objections : ' + AMELA.objections.map(o => o[0] + ' → ' + o[1]).join(' | '),
+    '',
+    'SA COMMISSION : dégressive par tranche du montant HT du chantier (' + baremeText() + '). Versée en fin de mois, une fois la facture payée par le client.',
+    'Date du jour : ' + todayISO() + '.'
+  ].join('\n');
+}
+function ctxText(p) {
+  const last = (p.log || []).slice(0, 4).map(l => '- ' + String(l.t).slice(0, 10) + ' ' + (KINDS[l.kind] || '') + ' : ' + l.text).join('\n');
+  return [
+    'PROSPECT : ' + p.nom + ' (' + (TYPES[p.type] || '') + (RESEAUX[p.reseau] ? ', ' + RESEAUX[p.reseau].toLowerCase() : '') + ')',
+    p.ville ? 'Ville : ' + p.ville : '',
+    p.contactNom ? 'Contact : ' + p.contactNom + (p.contactRole ? ' (' + p.contactRole + ')' : '') : 'Contact : nom pas encore connu',
+    'Étape : ' + stageLabel(p.stage),
+    p.lots ? 'Logements gérés : ' + p.lots : '',
+    p.q1 ? 'Réponse à la question 1 : ' + p.q1 : '', p.q2 ? 'Réponse à la question 2 : ' + p.q2 : '', p.q3 ? 'Réponse à la question 3 : ' + p.q3 : '',
+    p.notes ? 'Notes : ' + p.notes : '',
+    last ? 'Derniers échanges :\n' + last : 'Aucun échange pour l’instant.'
+  ].filter(Boolean).join('\n');
+}
+function chatHTML() {
+  let h = '';
+  S.chat.forEach((m, i) => {
+    if (m.role === 'user') h += `<div class="msg user">${esc(m.show || m.content)}</div>`;
+    else {
+      const prev = S.chat[i - 1];
+      const relais = !aiUsable() && prev && prev.role === 'user' ? `<button type="button" class="linkbtn" data-action="bridge" data-i="${i - 1}">Sur mesure avec une IA</button>` : '';
+      h += `<div class="msg bot">${esc(m.content)}</div><div class="msg-tools"><button type="button" class="linkbtn" data-action="copy-msg" data-i="${i}">Copier</button>${UI.ctx && S.prospects[UI.ctx] ? `<button type="button" class="linkbtn" data-action="note-msg" data-i="${i}">Ajouter à la fiche</button>` : ''}${relais}</div>`;
+    }
+  });
+  if (UI.chatBusy) h += `<div class="msg bot pending" id="chat-pending">${esc(UI.chatStream || 'AMELA réfléchit…')}</div><div class="msg-tools"><button type="button" class="linkbtn" data-action="ai-stop">Arrêter</button></div>`;
+  return h;
+}
+function renderChat() {
+  const el = $('#chat');
+  if (el) { el.innerHTML = chatHTML(); scrollChat(); }
+}
+function scrollChat() { const v = $('#view'); if (v && S.chat.length) v.scrollTop = v.scrollHeight; }
+function viewAssistante() {
+  const usable = aiUsable();
+  const opts = '<option value="">Aucun en particulier</option>' + liveProspects().sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(p => `<option value="${esc(p.id)}"${p.id === UI.ctx ? ' selected' : ''}>${esc(p.nom)}</option>`).join('');
+  return `<header class="stack"><h1>AMELA</h1><p class="lede">Ton assistante. Elle écrit tes messages, prépare tes appels et tes rendez-vous. Choisis une action, ou pose ta question.</p></header>
+    ${usable ? '' : '<div class="notice">Ici, AMELA te donne des modèles prêts à copier. Pour un texte écrit exprès pour ton prospect, touche « Sur mesure avec une IA » sous la réponse.</div>'}
+    <div class="field"><label for="ctx">Pour quel prospect ?</label><select id="ctx">${opts}</select></div>
+    <div class="quick">${QUICK.map(q => `<button type="button" class="btn ghost" data-action="quick" data-q="${q.id}">${esc(q.label)}</button>`).join('')}</div>
+    <div class="chat" id="chat" aria-live="polite">${chatHTML()}</div>
+    <form class="composer" data-form="chat"><div class="grow"><label class="small muted" for="chat-in">Ta question</label><textarea id="chat-in" name="q" rows="2" placeholder="Exemple : comment me présenter à un syndic ?"></textarea></div><button class="btn" type="submit"${UI.chatBusy ? ' disabled' : ''}>${usable ? 'Envoyer' : 'Préparer'}</button></form>
+    ${usable ? '' : '<p class="small muted">Ta question sera préparée pour une IA (Claude, ChatGPT ou une autre), avec tout ce qu’il faut savoir sur AMELA CONCEPT.</p>'}
+    ${S.chat.length ? '<div><button type="button" class="linkbtn" data-action="chat-clear">Effacer la conversation</button></div>' : ''}`;
+}
+function runQuick(id, pid) {
+  const q = QUICK.find(x => x.id === id);
+  if (!q) return;
+  const p = pid ? S.prospects[pid] : (UI.ctx ? S.prospects[UI.ctx] : null);
+  if (!S.onboarding.assistante) { S.onboarding.assistante = true; saveLocal(); }
+  if (q.special) {
+    if (!p) { toast('Choisis d’abord un prospect dans la liste.'); return; }
+    openDialog(q.special === 'cr' ? dlgCR(p) : dlgTransmettre(p));
+    return;
+  }
+  if (q.ask) { openDialog(dlgAsk(q, p)); return; }
+  askAssistant(q, p, '');
+}
+function askAssistant(q, p, x) {
+  const show = q.label + (p ? ' · ' + p.nom : '') + (x ? ' : ' + x : '');
+  const content = q.prompt.replace('{x}', x) + '\n\n' + (p ? ctxText(p) : 'Pas de prospect précis : fais-le pour une agence de gestion locative de Montpellier.');
+  const fallback = () => (TPL[q.id] ? TPL[q.id](p, x) : '');
+  if (!aiUsable()) {
+    S.chat.push({ role: 'user', content, show }, { role: 'assistant', content: fallback() });
+    S.chat = S.chat.slice(-30); saveLocal(); renderChat();
+    return;
+  }
+  assistantSend(show, content, fallback);
+}
+async function assistantSend(show, content, fallback) {
+  if (UI.chatBusy) return;
+  S.chat.push({ role: 'user', content, show });
+  UI.chatBusy = true; UI.chatStream = '';
+  if (UI.tab === 'assistante') { render(); scrollChat(); } else renderChat();
+  let text = '';
+  try {
+    const turns = [{ role: 'user', content: kbText() }].concat(S.chat.slice(-10).map(m => ({ role: m.role, content: m.content })));
+    const res = await runAI(turns, { onText: u => { text = u.text; UI.chatStream = cleanAI(text); const b = $('#chat-pending'); if (b) { b.textContent = UI.chatStream; scrollChat(); } } });
+    S.chat.push({ role: 'assistant', content: cleanAI(res.text) });
+  } catch (e) {
+    const partial = cleanAI((e && e.text) || text);
+    if (e && e.code === 'cancelled') { if (partial) S.chat.push({ role: 'assistant', content: partial + '\n\n(Réponse interrompue.)' }); else S.chat.pop(); }
+    else if (partial && e && e.code !== 'refused') { S.chat.push({ role: 'assistant', content: partial + '\n\n(Réponse interrompue.)' }); toast(aiErrorText(e)); }
+    else {
+      const fb = fallback ? fallback() : '';
+      if (fb) { S.chat.push({ role: 'assistant', content: fb }); toast(aiErrorText(e) + ' Voici le modèle prêt à l’emploi.'); }
+      else { S.chat.pop(); toast(aiErrorText(e)); }
+    }
+  }
+  UI.chatBusy = false; UI.chatStream = '';
+  S.chat = S.chat.slice(-30); saveLocal();
+  if (UI.tab === 'assistante') { render(); scrollChat(); }
+}
+function advicePrompt() {
+  const ws = weekStats();
+  const lines = liveProspects().slice(0, 60).map(p => { const q = qualify(p); return [p.nom, TYPES[p.type], stageLabel(p.stage), 'note ' + q.grade, 'dernier échange ' + (lastContact(p) || 'aucun'), p.next && p.next.date ? 'prochaine action ' + p.next.date + ' (' + (p.next.text || '') + ')' : 'aucune suite prévue'].join(' | '); }).join('\n');
+  const top = openRecos().slice(0, 3).map(x => x.r.nom).join(', ');
+  return kbText() + '\n\nTu es maintenant l’agent commercial : tu analyses le suivi de prospection et tu dis quoi faire.\nObjectif : ' + S.settings.objectif + ' nouveaux contacts par semaine. Fait cette semaine : ' + ws.contacts + ' nouveaux contacts, ' + ws.rdv + ' rendez-vous.\nSuivi, un prospect par ligne (nom | type | étape | note | dernier échange | prochaine action) :\n' + lines + '\nProspects recommandés pas encore ajoutés : ' + openRecos().length + (top ? ' (les mieux notés : ' + top + ')' : '') + '.\n\nDonne : 1) les trois priorités de la semaine, chacune avec le nom du prospect et l’action précise à faire ; 2) un risque à surveiller ; 3) un conseil d’organisation en une phrase. Texte simple, 150 mots au plus.';
+}
+function avisPrompt(p) {
+  return kbText() + '\n\nTu es maintenant l’agent commercial. Donne ton avis sur ce prospect en cinq lignes au plus : son potentiel pour AMELA CONCEPT, l’information qui me manque, l’angle d’approche, puis la prochaine action précise.\n\n' + ctxText(p) + '\nNote calculée par l’application : ' + qualify(p).score + ' sur 100.';
+}
+async function agentAdvice() {
+  if (UI.adviceBusy) return;
+  UI.adviceBusy = true; UI.advice = ''; render();
+  try {
+    const res = await runAI(advicePrompt(), { onText: u => { UI.advice = cleanAI(u.text); const o = $('#agent-out'); if (o) o.textContent = UI.advice; } });
+    UI.advice = cleanAI(res.text);
+  } catch (e) {
+    if (!(e && e.code === 'cancelled')) toast(aiErrorText(e));
+    if (e && e.text) UI.advice = cleanAI(e.text);
+  }
+  UI.adviceBusy = false;
+  if (UI.tab === 'agent') render();
+}
+async function prospectAvis(id) {
+  const p = S.prospects[id];
+  if (!p || UI.avisBusy) return;
+  UI.avisBusy = id; UI.avisStream = ''; renderSheet();
+  try {
+    const res = await runAI(avisPrompt(p), { onText: u => { UI.avisStream = cleanAI(u.text); const o = $('#avis-out'); if (o) o.textContent = UI.avisStream; } });
+    const cur = S.prospects[id];
+    if (cur) { cur.avis = { t: nowStamp(), text: cleanAI(res.text) }; commitProspect(id); }
+  } catch (e) { if (!(e && e.code === 'cancelled')) toast(aiErrorText(e)); }
+  UI.avisBusy = ''; UI.avisStream = '';
+  renderSheet(); render();
+}
+
+/* ===== Outils ===== */
+function viewOutils() {
+  const item = (type, t, d) => `<button type="button" data-action="sheet" data-type="${type}"><span class="grow"><span class="m-t">${t}</span><br><span class="m-d">${d}</span></span>${ic('go')}</button>`;
+  return `<header class="stack"><h1>Outils</h1><p class="lede">Tout ce qu’il te faut sous la main avant un appel ou un rendez-vous.</p></header>
+    <div class="menu stack">
+      ${item('guide', 'AMELA CONCEPT en bref', 'Ce que fait l’entreprise, ses points forts, comment te présenter.')}
+      ${item('commissions', 'Mes commissions', 'Le barème, un calcul rapide et le suivi de tes chantiers.')}
+      ${item('modeles', 'Modèles de messages', 'Premier message, script d’appel, relance, rendez-vous.')}
+      ${item('lexique', 'Lexique', 'Les mots du métier, expliqués simplement.')}
+      ${item('reglages', 'Réglages et sauvegarde', 'Ton prénom, ton objectif, le numéro de Lass, tes données.')}
+      ${item('aide', 'Comment ça marche', 'L’outil en cinq points.')}
+    </div>`;
+}
+
+/* ===== Fiches plein écran ===== */
+function openSheet(type, id) { UI.sheet = { type, id: id || '' }; renderSheet(); const b = $('#sheet .sheet-body'); if (b) b.scrollTop = 0; }
+function closeSheet() { UI.sheet = null; renderSheet(); render(); }
+function renderSheet() {
+  const el = $('#sheet');
+  if (!UI.sheet) { el.hidden = true; el.innerHTML = ''; return; }
+  const sc = $('#sheet .sheet-body');
+  const top = sc ? sc.scrollTop : 0;
+  const map = { prospect: sheetProspect, guide: sheetGuide, commissions: sheetCommissions, modeles: sheetModeles, lexique: sheetLexique, reglages: sheetReglages, aide: sheetAide };
+  const out = (map[UI.sheet.type] || sheetAide)(UI.sheet.id);
+  if (!out) { UI.sheet = null; el.hidden = true; el.innerHTML = ''; return; }
+  setHTML(el, `<div class="sheet-head"><button type="button" class="back" data-action="close-sheet">${ic('back')}Retour</button><span class="ttl">${esc(out.title)}</span></div><div class="sheet-body">${out.html}</div>`);
+  el.hidden = false;
+  const sc2 = $('#sheet .sheet-body');
+  if (sc2) sc2.scrollTop = top;
+}
+function contactButtons(p) {
+  const b = [];
+  if (p.tel) b.push(`<a class="btn ghost sm" href="tel:${esc(telDigits(p.tel))}">${ic('phone')}Appeler</a>`);
+  if (p.tel && isMobile(p.tel)) b.push(`<a class="btn ghost sm" href="https://wa.me/${esc(telIntl(p.tel))}" target="_blank" rel="noopener noreferrer">${ic('chat')}WhatsApp</a>`);
+  if (p.email && /^[^\s<>"']+@[^\s<>"']+$/.test(p.email)) b.push(`<a class="btn ghost sm" href="mailto:${esc(p.email)}">${ic('mail')}E-mail</a>`);
+  if (safeUrl(p.site)) b.push(`<a class="btn ghost sm" href="${esc(safeUrl(p.site))}" target="_blank" rel="noopener noreferrer">${ic('globe')}Site</a>`);
+  b.push(`<a class="btn ghost sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.nom + ' ' + (p.adresse || p.ville || ''))}" target="_blank" rel="noopener noreferrer">${ic('pin')}Plan</a>`);
+  return b.join('');
+}
+function sheetProspect(id) {
+  const p = S.prospects[id];
+  if (!p) return null;
+  const q = qualify(p);
+  const i = stageIndex(p.stage);
+  const st = stageOf(p.stage);
+  const nextSt = i >= 0 && i < STAGES.length - 1 ? STAGES[i + 1] : null;
+  const pid = esc(p.id);
+  let h = '';
+
+  if (p.stage === 'perdu') {
+    h += `<section class="card stagebox"><span class="eyebrow">Mis de côté</span><p class="now-label">Perdu ou plus tard</p>${rail('perdu')}${p.perduRaison ? `<p class="muted">Raison : ${esc(p.perduRaison)}</p>` : ''}
+      <div class="row"><button type="button" class="btn" data-action="revive" data-id="${pid}">Reprendre ce prospect</button></div></section>`;
+  } else {
+    h += `<section class="card stagebox"><div class="row between"><span class="eyebrow">Étape ${i + 1} sur ${STAGES.length}</span>${gradeBadge(q)}</div>
+      <p class="now-label">${esc(st.label)}</p>${rail(p.stage)}
+      <div class="steps" aria-hidden="true">${STAGES.map((s, k) => `<span class="${k === i ? 'on' : ''}">${esc(s.label)}</span>`).join('')}</div>
+      <p class="muted">${esc(st.hint)}</p><p><strong>À faire :</strong> ${esc(st.todo)}</p>
+      <div class="row">${nextSt ? `<button type="button" class="btn" data-action="stage-next" data-id="${pid}">Passer à : ${esc(nextSt.label)}</button>` : ''}<button type="button" class="btn ghost" data-action="stage-pick" data-id="${pid}">Changer d’étape</button></div></section>`;
+  }
+
+  const late = p.next && p.next.date && p.next.date < todayISO();
+  h += `<section class="card${late ? ' gold' : ''}"><h3>Prochaine action</h3>${p.next && p.next.date
+    ? `<p>${esc(p.next.text || 'À suivre')} <span class="pnext${late ? ' late' : ''}">· ${esc(relDay(p.next.date))}</span></p><div class="row"><button type="button" class="btn" data-action="log" data-id="${pid}" data-done="1">${ic('check')}C’est fait</button><button type="button" class="btn ghost" data-action="next" data-id="${pid}">Reporter</button></div>`
+    : `<p class="muted">Aucune suite prévue. Un prospect sans prochaine action s’oublie vite.</p><div class="row"><button type="button" class="btn" data-action="next" data-id="${pid}">Prévoir une action</button></div>`}
+    <div><button type="button" class="linkbtn" data-action="log" data-id="${pid}">Noter un échange (appel, passage, message)</button></div></section>`;
+
+  const kv = [];
+  if (p.contactNom) kv.push(['Contact', p.contactNom + (p.contactRole ? ', ' + p.contactRole : '')]);
+  if (p.tel) kv.push(['Téléphone', p.tel]);
+  if (p.email) kv.push(['E-mail', p.email]);
+  if (p.adresse || p.ville) kv.push(['Adresse', p.adresse || p.ville]);
+  if (p.lots) kv.push(['Logements gérés', fmtInt(p.lots)]);
+  if (p.notes) kv.push(['Notes', p.notes]);
+  h += `<section class="card"><div class="row between"><h3>Coordonnées</h3><button type="button" class="linkbtn" data-action="edit" data-id="${pid}">Modifier</button></div>
+    <p class="pmeta">${metaLine(p)}</p><div class="acts">${contactButtons(p)}</div>
+    ${kv.length ? `<dl class="kv">${kv.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>` : '<p class="muted small">Complète la fiche dès que tu as un nom et un numéro.</p>'}</section>`;
+
+  h += `<section class="card"><h3>Ce qu’en dit l’agent</h3>${q.blocked ? `<p>${esc(q.reasons[0])}</p>` : `<div class="scorebar"><span class="sc">${q.score}</span><div class="bar" role="img" aria-label="Note ${q.score} sur 100"><span style="width:${q.score}%"></span></div>${gradeBadge(q)}</div>
+    <ul class="why">${q.reasons.slice(0, 5).map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+    ${q.manque.length ? `<p class="small muted">Pour affiner la note, il te manque : ${esc(q.manque.join(', '))}.</p>` : ''}`}
+    ${UI.avisBusy === p.id ? `<div class="aiout" id="avis-out">${esc(UI.avisStream || 'L’agent réfléchit…')}</div><div><button type="button" class="linkbtn" data-action="ai-stop">Arrêter</button></div>` : (p.avis && p.avis.text ? `<div class="aiout">${esc(p.avis.text)}</div><p class="small muted">Avis du ${esc(fmtStamp(p.avis.t))}</p>` : '')}
+    ${q.blocked || UI.avisBusy === p.id ? '' : (aiUsable() ? `<div class="row"><button type="button" class="btn ghost sm" data-action="avis" data-id="${pid}">${ic('spark')}${p.avis ? 'Redemander son avis' : 'Demander son avis'}</button></div>` : `<div class="row"><button type="button" class="btn ghost sm" data-action="bridge-avis" data-id="${pid}">${ic('spark')}Avis d’une IA sur ce prospect</button></div>`)}</section>`;
+
+  h += `<section class="card"><div class="row between"><h3>Les trois questions</h3><button type="button" class="linkbtn" data-action="questions" data-id="${pid}">${p.q1 || p.q2 || p.q3 ? 'Modifier' : 'Noter les réponses'}</button></div>
+    <ol class="numbered">${AMELA.questions.map((qq, k) => `<li>${esc(qq)}${p['q' + (k + 1)] ? `<br><strong>${esc(p['q' + (k + 1)])}</strong>` : ''}</li>`).join('')}</ol></section>`;
+
+  if (p.stage !== 'perdu') {
+    h += `<section class="card"><h3>AMELA pour ce prospect</h3><div class="quick">${['premier', 'appel', 'rdv', 'relance', 'cr'].map(k => { const qk = QUICK.find(x => x.id === k); return `<button type="button" class="btn ghost sm" data-action="quick-for" data-q="${k}" data-id="${pid}">${esc(qk.label)}</button>`; }).join('')}</div></section>`;
+    h += `<section class="card gold"><h3>Transmettre à Lass</h3>${p.transmisLe ? `<p>Contact transmis le ${esc(F_SHORT.format(parseISO(p.transmisLe)))}. Ton apport est daté.</p>` : '<p>Dès que le prospect est intéressé, envoie le contact à Lass par écrit. C’est ce qui date ton apport.</p>'}
+      <div class="row"><button type="button" class="btn goldb" data-action="transmit" data-id="${pid}">${p.transmisLe ? 'Revoir le message' : 'Préparer le message'}</button></div></section>`;
+  }
+
+  const chs = p.chantiers || [];
+  h += `<section class="card"><div class="row between"><h3>Chantiers et commission</h3><button type="button" class="linkbtn" data-action="chantier" data-id="${pid}">Ajouter</button></div>
+    ${chs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Chantier</th><th class="n">Montant HT</th><th class="n">Commission</th></tr></thead><tbody>${chs.map(c => `<tr><td><button type="button" class="linkbtn" data-action="chantier" data-id="${pid}" data-ch="${esc(c.id)}">${esc(c.label || 'Chantier')}</button><br><span class="small muted">${esc(CH_STATUTS[c.statut] || '')}</span></td><td class="n">${fmtEur(c.montant)}</td><td class="n"><strong>${fmtEur(commission(c.montant))}</strong></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">Quand AMELA signe un chantier avec ce client, note-le ici : ta commission se calcule toute seule.</p>'}</section>`;
+
+  const log = p.log || [];
+  h += `<section class="card"><h3>Historique</h3>${log.length ? `<ul class="log">${log.slice(0, 40).map(l => `<li><span class="when">${esc(fmtStamp(l.t))} · ${esc(KINDS[l.kind] || 'Note')}</span><span class="txt">${esc(l.text || '')}</span></li>`).join('')}</ul>` : '<p class="muted small">Rien pour l’instant. Note chaque appel, passage ou message : tu sauras toujours où tu en es.</p>'}</section>`;
+
+  h += `<div class="row">${p.stage !== 'perdu' ? `<button type="button" class="btn ghost sm" data-action="perdu" data-id="${pid}">Perdu ou plus tard</button>` : ''}<button type="button" class="btn danger sm" data-action="delete" data-id="${pid}">Supprimer</button></div>`;
+  return { title: p.nom, html: h };
+}
+function sheetGuide() {
+  const h = `<p class="quote" style="font-style:normal">${esc(AMELA.phrase)}</p>
+    <section class="sec"><h2>L’entreprise</h2><div class="card"><dl class="kv">${AMELA.fiche.map(f => `<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join('')}</dl></div></section>
+    <section class="sec"><h2>Ce qu’elle fait</h2><div class="card"><ul class="why">${AMELA.travaux.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p class="small muted">${esc(AMELA.pasFait)}</p></div></section>
+    <section class="sec"><h2>Ses trois points forts</h2><div class="card"><ol class="numbered">${AMELA.atouts.map(x => `<li><strong>${esc(x[0])}</strong> : ${esc(x[1])}</li>`).join('')}</ol></div></section>
+    <section class="sec"><h2>Combien de temps durent les travaux</h2><div class="card"><table class="tbl"><tbody>${AMELA.durees.map(x => `<tr><td>${esc(x[0])}</td><td class="n"><strong>${esc(x[1])}</strong></td></tr>`).join('')}</tbody></table><p class="small muted">${esc(AMELA.dureesNote)}</p></div></section>
+    <section class="sec"><h2>Te présenter, en 20 secondes</h2><p class="quote" id="t-accroche">« ${esc(AMELA.accroche)} »</p><div><button type="button" class="btn ghost sm" data-action="copy-el" data-el="t-accroche">Copier</button></div></section>
+    <section class="sec"><h2>Trois questions à poser</h2><div class="card"><ol class="numbered">${AMELA.questions.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div></section>
+    <section class="sec"><h2>Si on te dit…</h2>${AMELA.objections.map(o => `<div class="card"><h3>« ${esc(o[0])} »</h3><p>${esc(o[1])}</p></div>`).join('')}</section>
+    <section class="sec"><h2>Ton rôle</h2><div class="card"><p>${esc(AMELA.role)}</p></div></section>`;
+  return { title: 'AMELA CONCEPT en bref', html: h };
+}
+function sheetCommissions() {
+  const ct = commissionTotals();
+  const ex = [1000, 5000, 10000, 20000, 50000];
+  const h = `<div class="kpis"><div class="kpi"><div class="n">${fmtEur(ct.gagne)}</div><div class="l">à recevoir</div></div><div class="kpi"><div class="n">${fmtEur(ct.avenir)}</div><div class="l">à venir</div></div><div class="kpi"><div class="n">${fmtEur(ct.recu)}</div><div class="l">déjà reçu</div></div></div>
+    <section class="sec"><h2>Le barème</h2><div class="card"><p>Ta commission dépend du montant HT du chantier. Plus le chantier est gros, plus le pourcentage baisse.</p>
+      <table class="tbl"><thead><tr><th>Montant du chantier HT</th><th class="n">Commission</th></tr></thead><tbody>${baremeRows().map(r => `<tr><td>${esc(r[0])}</td><td class="n"><strong>${esc(r[1])}</strong></td></tr>`).join('')}</tbody></table>
+      <p class="small muted">Chaque taux s’applique à la part du chantier située dans sa tranche. La commission est versée en fin de mois, une fois la facture payée par le client.</p></div></section>
+    <section class="sec"><h2>Calcul rapide</h2><div class="card"><div class="field"><label for="calc">Montant du chantier HT, en euros</label><input type="number" id="calc" inputmode="decimal" min="0" step="1" placeholder="Exemple : 2050"></div><p>Ta commission : <strong class="bignum" id="calc-out">0 €</strong></p>
+      <table class="tbl"><thead><tr><th>Exemples</th><th class="n">Commission</th></tr></thead><tbody>${ex.map(m => `<tr><td>${fmtEur(m)}</td><td class="n">${fmtEur(commission(m))}</td></tr>`).join('')}</tbody></table></div></section>
+    <section class="sec"><h2>Tes chantiers</h2>${ct.rows.length ? `<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client et chantier</th><th class="n">Montant HT</th><th class="n">Commission</th></tr></thead><tbody>${ct.rows.map(r => `<tr><td><button type="button" class="linkbtn" data-action="open" data-id="${esc(r.p.id)}">${esc(r.p.nom)}</button><br><span class="small muted">${esc(r.ch.label || 'Chantier')} · ${esc(CH_STATUTS[r.ch.statut] || '')}</span></td><td class="n">${fmtEur(r.ch.montant)}</td><td class="n"><strong>${fmtEur(r.c)}</strong></td></tr>`).join('')}</tbody></table></div></div>` : '<p class="muted">Aucun chantier noté. Ouvre la fiche d’un client pour en ajouter un.</p>'}</section>`;
+  return { title: 'Mes commissions', html: h };
+}
+function sheetModeles() {
+  const blocs = [['Premier message', TPL.premier(null)], ['Script d’appel', TPL.appel(null)], ['Préparer un rendez-vous', TPL.rdv(null)], ['Relance', TPL.relance(null)]];
+  const h = `<p class="lede">Des textes prêts à copier. ${aiUsable() ? 'Pour un texte adapté à un prospect précis, demande à AMELA.' : ''}</p>` + blocs.map((b, i) => `<section class="card"><div class="row between"><h3>${esc(b[0])}</h3><button type="button" class="btn ghost sm" data-action="copy-el" data-el="tpl-${i}">Copier</button></div><div class="aiout" id="tpl-${i}">${esc(b[1])}</div></section>`).join('');
+  return { title: 'Modèles de messages', html: h };
+}
+function sheetLexique() {
+  return { title: 'Lexique', html: LEXIQUE.map(l => `<div class="card"><h3>${esc(l[0])}</h3><p>${esc(l[1])}</p></div>`).join('') };
+}
+function sheetAide() {
+  const pts = [
+    ['L’agent te propose des entreprises', 'Dans l’onglet Agent, ajoute celles qui t’intéressent. Les mieux notées sont à appeler en premier.'],
+    ['Tu suis chaque prospect sur quatre étapes', 'À contacter, en discussion, transmis à Lass, client.'],
+    ['Tu notes chaque échange', 'Après un appel ou un passage, note ce qui s’est dit et choisis la prochaine action. L’outil te la rappelle le bon jour.'],
+    ['AMELA, ton assistante, écrit pour toi', 'Premier message, script d’appel, relance, compte rendu : elle connaît l’entreprise et ton prospect.'],
+    ['Tu transmets à Lass par écrit', 'Dès qu’un prospect est intéressé, envoie le message préparé. Ton apport est daté, et ta commission suit le chantier.']
+  ];
+  return { title: 'Comment ça marche', html: `<div class="card"><ol class="numbered">${pts.map(p => `<li><strong>${esc(p[0])}</strong><br><span class="small muted">${esc(p[1])}</span></li>`).join('')}</ol></div>
+    <div class="notice"><strong>Une règle simple :</strong> chaque prospect doit toujours avoir une prochaine action et une date.</div>
+    ${AUTONOME ? '<div class="card"><h3>L’avoir comme une appli sur ton téléphone</h3><p class="small">iPhone : ouvre cette page dans Safari, touche le bouton Partager, puis « Sur l’écran d’accueil ».</p><p class="small">Android : ouvre-la dans Chrome, touche les trois points, puis « Ajouter à l’écran d’accueil ».</p><p class="small">Sur ordinateur, garde simplement l’adresse en favori. Tes fiches sont les mêmes partout.</p><p class="small">L’adresse à retenir : <strong>' + esc(location.host + (location.pathname.length > 1 ? location.pathname : '')) + '</strong></p></div>' : ''}` };
+}
+function sheetReglages() {
+  const s = S.settings;
+  const h = `<form class="stack" data-form="settings">
+    <div class="field"><label for="s-prenom">Ton prénom</label><input type="text" id="s-prenom" name="prenom" value="${esc(S.profile.prenom)}" maxlength="40" autocomplete="given-name"></div>
+    <div class="field"><label for="s-obj">Objectif de nouveaux contacts par semaine</label><input type="number" id="s-obj" name="objectif" min="1" max="200" step="1" value="${esc(s.objectif)}" inputmode="numeric"></div>
+    <div class="field"><label for="s-lass">Numéro WhatsApp de Lass</label><input type="tel" id="s-lass" name="lassTel" value="${esc(s.lassTel || CONFIG.lassTel || '')}" placeholder="06 00 00 00 00" autocomplete="off"><span class="help">Il sert à ouvrir WhatsApp sur la bonne conversation quand tu transmets un contact.</span></div>
+    <div class="field"><label for="s-clients">Entreprises déjà clientes d’AMELA CONCEPT</label><textarea id="s-clients" name="clients" rows="3" placeholder="Un nom par ligne">${esc(s.clients)}</textarea><span class="help">Demande la liste à Lass. Ces contacts ne comptent pas comme un apport : l’outil te prévient.</span></div>
+    <div class="row"><button class="btn" type="submit">Enregistrer</button></div></form>
+    <section class="sec"><h2>Tes données</h2><div class="card"><p>${cloud.on ? 'Elles sont enregistrées en ligne : tu les retrouves sur tous tes appareils.' : 'Elles sont enregistrées sur cet appareil, dans ce navigateur. Ouvre toujours l’outil au même endroit, et fais une sauvegarde chaque semaine.'}</p>
+      <div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button><button type="button" class="btn ghost sm" data-action="restore">Restaurer une sauvegarde</button><button type="button" class="btn ghost sm" data-action="csv">Exporter en tableau</button></div>
+      ${!cloud.on && plat.db ? '<div><button type="button" class="linkbtn" data-action="cloud-test">Essayer la sauvegarde en ligne</button></div>' : ''}
+      <p class="small muted">${count()} prospect${count() > 1 ? 's' : ''} · ${S.meta.lastBackup ? 'dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) : 'aucune sauvegarde pour l’instant'}</p></div></section>
+    ${AUTONOME ? `<section class="sec"><h2>Cet appareil</h2><div class="card"><p class="small">Ton code d’accès est enregistré sur cet appareil : ${esc(codeJoli(remote.code).replace(/[A-Z0-9](?=.{5})/g, '•'))}</p><div class="row"><button type="button" class="btn ghost sm" data-action="signout">Se déconnecter de cet appareil</button></div></div></section>` : ''}
+    <section class="sec"><h2>Repartir de zéro</h2><div class="card"><p class="small">${cloud.on ? 'Efface tous les prospects, les échanges et les réglages, sur cet appareil et en ligne. Lass ne les verra plus non plus.' : 'Efface tous les prospects, les échanges et les réglages de cet appareil.'}</p><div class="row"><button type="button" class="btn danger sm" data-action="wipe">Tout effacer</button></div></div></section>`;
+  return { title: 'Réglages et sauvegarde', html: h };
+}
+
+/* ===== Fenêtres ===== */
+function openDialog(html) {
+  const el = $('#dialog');
+  setHTML(el, `<div class="dialog" role="dialog" aria-modal="true">${html}</div>`);
+  el.hidden = false;
+  const f = el.querySelector('[autofocus], input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]), textarea, select, button');
+  if (f) { try { f.focus({ preventScroll: true }); } catch (e) { /* pas de focus */ } }
+}
+function closeDialog() { const el = $('#dialog'); el.hidden = true; el.innerHTML = ''; }
+const dlgFoot = (label, extra) => `<div class="row">${label ? `<button class="btn" type="submit">${label}</button>` : ''}${extra || ''}<button type="button" class="btn ghost" data-action="close-dialog">Annuler</button></div>`;
+const optList = (obj, cur, blank) => Object.keys(obj).map(k => `<option value="${k}"${k === cur ? ' selected' : ''}>${esc(obj[k] || blank || '')}</option>`).join('');
+
+function dlgProspectForm(p, pre) {
+  const v = Object.assign({ nom: '', type: 'gestion', reseau: 'inconnu', zone: 'montpellier', ville: '', adresse: '', tel: '', email: '', site: '', contactNom: '', contactRole: '', lots: '', notes: '', f: {} }, p || {}, pre || {});
+  const f = v.f || {};
+  const tick = (k, lab) => `<label class="tick"><input type="checkbox" name="f_${k}"${f[k] ? ' checked' : ''}><span>${lab}</span></label>`;
+  return `<form class="stack" data-form="prospect" data-id="${p ? esc(p.id) : ''}"><h2>${p ? 'Modifier la fiche' : 'Nouveau prospect'}</h2>
+    ${p ? '' : '<p class="muted small">Le nom suffit pour commencer. Tu compléteras le reste au fil des échanges.</p>'}
+    <div class="field"><label for="pf-nom">Nom de l’entreprise</label><input type="text" id="pf-nom" name="nom" value="${esc(v.nom)}" required maxlength="120" autocomplete="off"></div>
+    <div class="field"><label for="pf-type">Type</label><select id="pf-type" name="type">${optList(TYPES, v.type)}</select></div>
+    <div class="two"><div class="field"><label for="pf-ville">Ville</label><input type="text" id="pf-ville" name="ville" value="${esc(v.ville)}" maxlength="80"></div>
+      <div class="field"><label for="pf-tel">Téléphone</label><input type="tel" id="pf-tel" name="tel" value="${esc(v.tel)}" maxlength="30" autocomplete="off"></div></div>
+    <div class="two"><div class="field"><label for="pf-cn">Personne à contacter</label><input type="text" id="pf-cn" name="contactNom" value="${esc(v.contactNom)}" maxlength="80" autocomplete="off"></div>
+      <div class="field"><label for="pf-cr">Son rôle</label><input type="text" id="pf-cr" name="contactRole" value="${esc(v.contactRole)}" maxlength="80" placeholder="Gestionnaire, responsable…"></div></div>
+    <details class="more"${p || pre ? ' open' : ''}><summary>Plus de détails</summary><div class="stack">
+      <div class="field"><label for="pf-adr">Adresse</label><input type="text" id="pf-adr" name="adresse" value="${esc(v.adresse)}" maxlength="160"></div>
+      <div class="two"><div class="field"><label for="pf-mail">E-mail</label><input type="email" id="pf-mail" name="email" value="${esc(v.email)}" maxlength="120" autocomplete="off"></div>
+        <div class="field"><label for="pf-site">Site web</label><input type="text" id="pf-site" name="site" value="${esc(v.site)}" maxlength="200" inputmode="url"></div></div>
+      <div class="two"><div class="field"><label for="pf-res">Enseigne</label><select id="pf-res" name="reseau">${optList(RESEAUX, v.reseau, 'Je ne sais pas')}</select></div>
+        <div class="field"><label for="pf-zone">Secteur</label><select id="pf-zone" name="zone">${optList(ZONES, v.zone)}</select></div></div>
+      <div class="field"><label for="pf-lots">Logements gérés</label><input type="number" id="pf-lots" name="lots" value="${esc(v.lots || '')}" min="0" step="1" inputmode="numeric"><span class="help">Pour une agence ou un syndic, si tu le sais.</span></div>
+      <div class="stack"><span class="legend">Ce que tu sais d’elle</span>
+        ${tick('rotation', 'Logements étudiants, meublés ou saisonniers')}${tick('travaux', 'Commande des travaux pour ses propriétaires')}${tick('syndic', 'Fait aussi du syndic')}${tick('besoin', 'M’a parlé d’un problème avec ses artisans')}${tick('interne', 'A déjà sa propre société de travaux')}</div>
+      <div class="field"><label for="pf-notes">Notes</label><textarea id="pf-notes" name="notes" rows="3" maxlength="2000">${esc(v.notes)}</textarea></div>
+    </div></details>${dlgFoot('Enregistrer')}</form>`;
+}
+function whenOptions(def) {
+  const o = [['0', 'Aujourd’hui'], ['1', 'Demain'], ['3', 'Dans 3 jours'], ['7', 'Dans 1 semaine'], ['14', 'Dans 2 semaines'], ['30', 'Dans 1 mois'], ['none', 'Rien à prévoir']];
+  return `<div class="opts" role="radiogroup" aria-label="Quand">${o.map(x => `<label><input type="radio" name="when" value="${x[0]}"${x[0] === String(def) ? ' checked' : ''}><span>${x[1]}</span></label>`).join('')}</div>
+    <div class="field"><label for="lg-date">Ou une date précise</label><input type="date" id="lg-date" name="date" min="${todayISO()}"></div>`;
+}
+function dlgLog(p, done) {
+  const st = stageOf(p.stage) || STAGES[1];
+  const sugg = p.stage === 'a_contacter' ? STAGES[1] : st;
+  return `<form class="stack" data-form="log" data-id="${esc(p.id)}"><h2>${done ? 'C’est fait' : 'Noter un échange'}</h2><p class="muted small">${esc(p.nom)}</p>
+    <div class="stack"><span class="legend">Comment ?</span><div class="opts" role="radiogroup" aria-label="Type d’échange">${Object.keys(KINDS).map((k, i) => `<label><input type="radio" name="kind" value="${k}"${i === 0 ? ' checked' : ''}><span>${esc(KINDS[k])}</span></label>`).join('')}</div></div>
+    <div class="field"><label for="lg-text">Ce qui s’est passé</label><textarea id="lg-text" name="text" rows="3" maxlength="2000" placeholder="Exemple : j’ai eu l’accueil, la gestionnaire rappelle jeudi."></textarea></div>
+    <div class="field"><label for="lg-next">Et ensuite ?</label><input type="text" id="lg-next" name="nextText" value="${esc(sugg.next)}" maxlength="120"></div>
+    ${whenOptions(Math.max(1, sugg.delay) > 30 ? 30 : ([0, 1, 3, 7, 14, 30].includes(sugg.delay) ? Math.max(1, sugg.delay) : 3))}${dlgFoot('Enregistrer')}</form>`;
+}
+function dlgNext(p) {
+  const st = stageOf(p.stage) || STAGES[1];
+  return `<form class="stack" data-form="next" data-id="${esc(p.id)}"><h2>Prochaine action</h2><p class="muted small">${esc(p.nom)}</p>
+    <div class="field"><label for="lg-next">Que dois-tu faire ?</label><input type="text" id="lg-next" name="nextText" value="${esc((p.next && p.next.text) || st.next)}" maxlength="120"></div>
+    ${whenOptions(3)}${dlgFoot('Enregistrer')}</form>`;
+}
+function dlgStage(p) {
+  return `<div class="stack"><h2>Où en es-tu ?</h2><p class="muted small">${esc(p.nom)}</p>
+    ${STAGES.map((s, k) => `<button type="button" class="task" data-action="set-stage" data-id="${esc(p.id)}" data-stage="${s.id}"${s.id === p.stage ? ' style="border-color:var(--gold)"' : ''}><span class="t-main"><span class="t-name">${k + 1}. ${esc(s.label)}</span><span class="t-what">${esc(s.hint)}</span></span>${s.id === p.stage ? '<span class="t-when">ici</span>' : ''}</button>`).join('')}
+    <div class="row"><button type="button" class="btn ghost" data-action="perdu" data-id="${esc(p.id)}">Perdu ou plus tard</button><button type="button" class="btn ghost" data-action="close-dialog">Annuler</button></div></div>`;
+}
+function dlgPerdu(p) {
+  return `<form class="stack" data-form="perdu" data-id="${esc(p.id)}"><h2>Perdu ou plus tard</h2><p class="muted small">${esc(p.nom)}</p>
+    <div class="field"><label for="pd-raison">Pourquoi ?</label><select id="pd-raison" name="raison">${RAISONS_PERDU.map(r => `<option>${esc(r)}</option>`).join('')}</select></div>
+    <div class="stack"><span class="legend">Reprendre contact ?</span><div class="opts" role="radiogroup" aria-label="Reprendre contact">${[['30', 'Dans 1 mois'], ['90', 'Dans 3 mois'], ['180', 'Dans 6 mois'], ['none', 'Non']].map((x, i) => `<label><input type="radio" name="when" value="${x[0]}"${i === 1 ? ' checked' : ''}><span>${x[1]}</span></label>`).join('')}</div></div>
+    <p class="small muted">Si l’entreprise ne veut pas être démarchée, l’outil ne te proposera pas de la rappeler.</p>${dlgFoot('Enregistrer')}</form>`;
+}
+function lassMessage(p) {
+  const last = (p.log || []).find(l => l.kind !== 'note' && l.text);
+  const L = ['Bonjour Lass, je te transmets un contact pour AMELA CONCEPT.', '', 'Entreprise : ' + p.nom + (TYPES[p.type] ? ' (' + TYPES[p.type].toLowerCase() + ')' : '')];
+  if (p.adresse || p.ville) L.push('Adresse : ' + (p.adresse || p.ville));
+  if (p.contactNom) L.push('Contact : ' + p.contactNom + (p.contactRole ? ', ' + p.contactRole : ''));
+  if (p.tel) L.push('Téléphone : ' + p.tel);
+  if (p.email) L.push('E-mail : ' + p.email);
+  if (p.lots) L.push('Logements gérés : ' + p.lots);
+  if (p.q1) L.push('Travaux confiés : ' + p.q1);
+  if (p.q2) L.push('Aujourd’hui : ' + p.q2);
+  if (p.q3) L.push('Chantier à venir : ' + p.q3);
+  if (last) L.push('Dernier échange : ' + last.text);
+  L.push('', 'Suite attendue : les rappeler pour convenir d’une visite ou d’un devis.', '', 'Apport transmis le ' + F_SHORT.format(new Date()) + ' ' + new Date().getFullYear() + '.');
+  if (S.profile.prenom) L.push(S.profile.prenom);
+  return L.join('\n');
+}
+function waLass(text) {
+  const n = telIntl(S.settings.lassTel || CONFIG.lassTel || '');
+  return 'https://wa.me/' + (n.length >= 9 ? n : '') + '?text=' + encodeURIComponent(text);
+}
+function dlgTransmettre(p) {
+  const msg = lassMessage(p);
+  return `<form class="stack" data-form="transmettre" data-id="${esc(p.id)}"><h2>Transmettre à Lass</h2>
+    <p class="small muted">Relis le message, envoie-le, puis confirme. La date d’envoi devient la date de ton apport.</p>
+    <div class="field"><label for="tx-msg">Ton message</label><textarea id="tx-msg" name="msg" rows="11">${esc(msg)}</textarea></div>
+    <div class="row"><button type="button" class="btn ghost sm" data-action="copy-el" data-el="tx-msg">Copier le message</button><a class="btn ghost sm" id="tx-wa" href="${esc(waLass(msg))}" target="_blank" rel="noopener noreferrer">${ic('chat')}Ouvrir WhatsApp</a></div>
+    ${S.settings.lassTel || CONFIG.lassTel ? '' : '<p class="small muted">Ajoute le numéro de Lass dans Outils, Réglages : WhatsApp s’ouvrira directement sur sa conversation.</p>'}
+    ${dlgFoot('J’ai envoyé le message')}</form>`;
+}
+function dlgChantier(p, ch) {
+  const c = ch || { label: '', montant: '', statut: 'devis', date: todayISO() };
+  return `<form class="stack" data-form="chantier" data-id="${esc(p.id)}" data-ch="${ch ? esc(ch.id) : ''}"><h2>${ch ? 'Modifier le chantier' : 'Nouveau chantier'}</h2><p class="muted small">${esc(p.nom)}</p>
+    <div class="field"><label for="ch-label">Quel chantier ?</label><input type="text" id="ch-label" name="label" value="${esc(c.label)}" maxlength="120" placeholder="Exemple : studio repeint, rue de la Loge"></div>
+    <div class="two"><div class="field"><label for="ch-montant">Montant HT, en euros</label><input type="number" id="ch-montant" name="montant" value="${esc(c.montant)}" min="0" step="0.01" inputmode="decimal" required></div>
+      <div class="field"><label for="ch-date">Date</label><input type="date" id="ch-date" name="date" value="${esc(c.date || todayISO())}"></div></div>
+    <div class="field"><label for="ch-statut">Où en est-il ?</label><select id="ch-statut" name="statut">${optList(CH_STATUTS, c.statut)}</select><span class="help">Demande le montant HT à Lass : c’est celui de la facture.</span></div>
+    ${dlgFoot('Enregistrer', ch ? `<button type="button" class="btn danger" data-action="chantier-del" data-id="${esc(p.id)}" data-ch="${esc(ch.id)}">Supprimer</button>` : '')}</form>`;
+}
+function dlgQuestions(p) {
+  return `<form class="stack" data-form="questions" data-id="${esc(p.id)}"><h2>Les trois questions</h2><p class="muted small">${esc(p.nom)}</p>
+    ${AMELA.questions.map((q, k) => `<div class="field"><label for="qq-${k}">${k + 1}. ${esc(q)}</label><textarea id="qq-${k}" name="q${k + 1}" rows="2" maxlength="600">${esc(p['q' + (k + 1)] || '')}</textarea></div>`).join('')}${dlgFoot('Enregistrer')}</form>`;
+}
+function dlgConfirm(o) {
+  return `<div class="stack"><h2>${esc(o.title)}</h2><p>${esc(o.text)}</p><div class="row"><button type="button" class="btn${o.danger ? ' danger' : ''}" data-action="${o.action}" data-id="${esc(o.id || '')}">${esc(o.yes)}</button><button type="button" class="btn ghost" data-action="close-dialog">Annuler</button></div></div>`;
+}
+function dlgAsk(q, p) {
+  return `<form class="stack" data-form="ask" data-q="${q.id}" data-id="${p ? esc(p.id) : ''}"><h2>${esc(q.label)}</h2>
+    <div class="field"><label for="ask-x">${esc(q.ask)}</label><input type="text" id="ask-x" name="x" maxlength="200" placeholder="${esc(q.ph || '')}" required autocomplete="off"></div>${dlgFoot('Demander')}</form>`;
+}
+function dlgColler() {
+  return `<form class="stack" data-form="coller"><h2>Coller une fiche trouvée</h2><p class="small muted">Copie le texte d’une fiche Google Maps, d’un annuaire ou d’un site, puis colle-le ici. AMELA remplit la fiche, tu vérifies.</p>
+    <div class="field"><label for="co-txt">Le texte copié</label><textarea id="co-txt" name="txt" rows="7" maxlength="6000" required></textarea></div>
+    <div class="row"><button class="btn" type="submit" id="co-go">${ic('spark')}Remplir la fiche</button><button type="button" class="btn ghost" data-action="close-dialog">Annuler</button></div></form>`;
+}
+function dlgCR(p) {
+  return `<form class="stack" data-form="cr" data-id="${esc(p.id)}"><h2>Compte rendu</h2><p class="muted small">${esc(p.nom)}</p>
+    <div class="field"><label for="cr-txt">Raconte ce qui s’est dit, comme ça vient</label><textarea id="cr-txt" name="txt" rows="7" maxlength="6000" required placeholder="Exemple : vu Mme Martin, gestionnaire. 200 logements. Leur peintre met trois semaines. Elle veut un devis pour un studio qui se libère le 30."></textarea><span class="help">Astuce : le micro de ton clavier te permet de dicter.</span></div>
+    <div class="row">${aiUsable() ? `<button class="btn" type="submit" name="mode" value="ai" id="cr-go">${ic('spark')}Remplir la fiche</button>` : ''}<button class="btn ${aiUsable() ? 'ghost' : ''}" type="submit" name="mode" value="note">Enregistrer en note</button><button type="button" class="btn ghost" data-action="close-dialog">Annuler</button></div></form>`;
+}
+function dlgCRPreview(p, d, brut) {
+  const jours = Math.max(0, Math.min(60, Math.round(Number(d.dansJours) || 3)));
+  const etapes = { '': 'Ne pas changer d’étape' };
+  STAGES.forEach(s => { if (s.id !== 'a_contacter' && s.id !== 'transmis') etapes[s.id] = s.label; });
+  const et = etapes[d.etape] !== undefined ? d.etape : '';
+  return `<form class="stack" data-form="cr-apply" data-id="${esc(p.id)}"><h2>Vérifie avant d’enregistrer</h2><p class="muted small">${esc(p.nom)}</p>
+    <input type="hidden" name="brut" value="${esc(brut)}">
+    <div class="field"><label for="cp-res">Résumé</label><textarea id="cp-res" name="resume" rows="3" maxlength="1500">${esc(d.resume || '')}</textarea></div>
+    <div class="two"><div class="field"><label for="cp-cn">Contact</label><input type="text" id="cp-cn" name="contactNom" value="${esc(d.contactNom || p.contactNom || '')}" maxlength="80"></div><div class="field"><label for="cp-cr">Son rôle</label><input type="text" id="cp-cr" name="contactRole" value="${esc(d.contactRole || p.contactRole || '')}" maxlength="80"></div></div>
+    <div class="field"><label for="cp-lots">Logements gérés</label><input type="number" id="cp-lots" name="lots" value="${esc(num(d.lots) || p.lots || '')}" min="0" inputmode="numeric"></div>
+    ${AMELA.questions.map((q, k) => `<div class="field"><label for="cp-q${k}">${k + 1}. ${esc(q)}</label><textarea id="cp-q${k}" name="q${k + 1}" rows="2" maxlength="600">${esc(d['q' + (k + 1)] || p['q' + (k + 1)] || '')}</textarea></div>`).join('')}
+    <div class="field"><label for="cp-next">Prochaine action</label><input type="text" id="cp-next" name="nextText" value="${esc(d.prochaineAction || '')}" maxlength="120"></div>
+    <div class="two"><div class="field"><label for="cp-date">Pour le</label><input type="date" id="cp-date" name="date" value="${addDays(todayISO(), jours)}" min="${todayISO()}"></div>
+      <div class="field"><label for="cp-et">Étape</label><select id="cp-et" name="etape">${optList(etapes, et)}</select></div></div>${dlgFoot('Enregistrer dans la fiche')}</form>`;
+}
+function dlgBridge(prompt, pid) {
+  const p = pid ? S.prospects[pid] : null;
+  return `<div class="stack"><h2>Sur mesure avec une IA</h2>
+    <p class="small muted">Ta demande est déjà rédigée, avec la présentation d’AMELA CONCEPT${p ? ' et la fiche de ' + esc(p.nom) : ''}. Il te reste à la donner à une IA : Claude, ChatGPT ou une autre.</p>
+    <ol class="numbered"><li>Copie la demande.</li><li>Ouvre ton IA et colle la demande dans une nouvelle conversation.</li><li>Reviens coller sa réponse ici si tu veux la garder.</li></ol>
+    <div class="field"><label for="br-prompt">Ta demande, prête à coller</label><textarea id="br-prompt" rows="4" readonly>${esc(prompt)}</textarea></div>
+    <div class="row"><button type="button" class="btn" data-action="copy-el" data-el="br-prompt">Copier la demande</button><a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Ouvrir Claude</a></div>
+    <form class="stack" data-form="bridge-save" data-id="${p ? esc(p.id) : ''}">
+      <div class="field"><label for="br-rep">La réponse de l’IA</label><textarea id="br-rep" name="rep" rows="4" maxlength="6000" placeholder="Colle ici sa réponse pour la garder"></textarea></div>
+      <div class="row"><button class="btn ghost" type="submit">${p ? 'Garder dans la fiche' : 'Garder dans la conversation'}</button><button type="button" class="btn ghost" data-action="close-dialog">Fermer</button></div>
+    </form></div>`;
+}
+function dlgBackup() {
+  return `<div class="stack"><h2>Ta sauvegarde</h2><p class="small muted">Copie ce texte et envoie-le-toi par WhatsApp ou par e-mail. Pour retrouver tes données sur un autre appareil, colle-le dans « Restaurer une sauvegarde ».</p>
+    <div class="field"><label for="bk-txt">Texte de sauvegarde</label><textarea id="bk-txt" rows="5" readonly>${esc(backupText())}</textarea></div>
+    <div class="row"><button type="button" class="btn" data-action="backup-copy">Copier la sauvegarde</button>${plat.downloads ? '<button type="button" class="btn ghost" data-action="backup-dl">Télécharger le fichier</button>' : ''}<button type="button" class="btn ghost" data-action="close-dialog">Fermer</button></div></div>`;
+}
+function dlgRestore() {
+  return `<form class="stack" data-form="restore"><h2>Restaurer une sauvegarde</h2><p class="small muted">Colle le texte de ta sauvegarde, ou choisis le fichier. Les données actuelles de cet appareil seront remplacées.</p>
+    <div class="field"><label for="rs-txt">Texte de sauvegarde</label><textarea id="rs-txt" name="txt" rows="5"></textarea></div>
+    <div class="field"><label for="rs-file">Ou un fichier de sauvegarde</label><input type="file" id="rs-file" name="file" accept=".json,.txt,application/json,text/plain"></div>${dlgFoot('Restaurer')}</form>`;
+}
+function dlgSync() {
+  if (cloud.on) return `<div class="stack"><h2>Enregistré en ligne</h2><p>Tes prospects sont enregistrés en ligne. Tu les retrouves sur tous tes appareils, et Lass peut suivre ton avancée.</p><div class="row"><button type="button" class="btn ghost" data-action="close-dialog">Fermer</button></div></div>`;
+  return `<div class="stack"><h2>Enregistré sur cet appareil</h2><p>Tes prospects restent dans ce navigateur, sur cet appareil. Ouvre toujours l’outil au même endroit.</p><p class="small muted">Pour ne rien perdre, fais une sauvegarde chaque semaine et envoie-la-toi.</p>
+    <div class="row"><button type="button" class="btn" data-action="backup">Faire une sauvegarde</button>${plat.db ? '<button type="button" class="btn ghost" data-action="cloud-test">Essayer la sauvegarde en ligne</button>' : ''}<button type="button" class="btn ghost" data-action="close-dialog">Fermer</button></div></div>`;
+}
+
+/* ===== Formulaires ===== */
+function whenFromForm(fd) {
+  const d = String(fd.get('date') || '');
+  if (isDate(d)) return d;
+  const w = String(fd.get('when') || '3');
+  if (w === 'none') return null;
+  return addDays(todayISO(), Number(w) || 0);
+}
+const FORMS = {
+  welcome(fd) {
+    S.profile.prenom = String(fd.get('prenom') || '').trim().slice(0, 40);
+    S.profile.named = true;
+    saveLocal(); render();
+  },
+  prospect(fd, form) {
+    const id = form.dataset.id;
+    const nom = String(fd.get('nom') || '').trim();
+    if (!nom) { toast('Indique au moins le nom de l’entreprise.'); return; }
+    const p = id && S.prospects[id] ? S.prospects[id] : newProspect();
+    const str = k => String(fd.get(k) || '').trim();
+    Object.assign(p, { nom, type: TYPES[str('type')] ? str('type') : 'autre', ville: str('ville'), tel: str('tel'), contactNom: str('contactNom'), contactRole: str('contactRole'), adresse: str('adresse'), email: str('email'), site: withHttp(str('site')), reseau: RESEAUX[str('reseau')] !== undefined ? str('reseau') : 'inconnu', zone: ZONES[str('zone')] ? str('zone') : 'montpellier', lots: num(fd.get('lots')), notes: str('notes') });
+    p.f = Object.assign({}, p.f);
+    ['rotation', 'travaux', 'syndic', 'besoin', 'interne'].forEach(k => { if (fd.get('f_' + k)) p.f[k] = true; else delete p.f[k]; });
+    const deja = checkDejaClient(p);
+    S.prospects[p.id] = p;
+    commitProspect(p.id);
+    closeDialog();
+    if (UI.sheet && UI.sheet.type === 'prospect' && UI.sheet.id === p.id) { renderSheet(); render(); } else { render(); openSheet('prospect', p.id); }
+    toast(deja ? 'Attention : cette entreprise est déjà cliente d’AMELA CONCEPT.' : (id ? 'Fiche mise à jour.' : 'Prospect ajouté.'));
+  },
+  log(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const kind = KINDS[fd.get('kind')] ? String(fd.get('kind')) : 'note';
+    const text = String(fd.get('text') || '').trim();
+    addLog(p, kind, text || KINDS[kind]);
+    if (kind !== 'note' && p.stage === 'a_contacter') p.stage = 'discussion';
+    const date = whenFromForm(fd);
+    p.next = date ? { text: String(fd.get('nextText') || '').trim() || 'À suivre', date } : null;
+    commitProspect(p.id);
+    closeDialog(); refresh();
+    toast(date ? 'Noté. Prochaine action ' + relDay(date) + '.' : 'Noté.');
+  },
+  next(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const date = whenFromForm(fd);
+    p.next = date ? { text: String(fd.get('nextText') || '').trim() || 'À suivre', date } : null;
+    commitProspect(p.id);
+    closeDialog(); refresh();
+  },
+  perdu(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const raison = String(fd.get('raison') || '');
+    const w = String(fd.get('when') || 'none');
+    p.stage = 'perdu'; p.perduRaison = raison;
+    addLog(p, 'note', 'Mis de côté : ' + raison + '.');
+    p.next = w === 'none' || raison === 'Ne veut pas être démarché' ? null : { text: 'Reprendre contact', date: addDays(todayISO(), Number(w) || 90) };
+    commitProspect(p.id);
+    closeDialog(); refresh();
+  },
+  transmettre(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const first = !p.transmisLe;
+    if (first) p.transmisLe = todayISO();
+    addLog(p, 'note', first ? 'Contact transmis à Lass par écrit.' : 'Message renvoyé à Lass.');
+    if (p.stage !== 'perdu' && stageIndex(p.stage) < stageIndex('transmis')) { p.stage = 'transmis'; p.next = { text: 'Faire le point avec Lass', date: addDays(todayISO(), 3) }; }
+    commitProspect(p.id);
+    closeDialog(); refresh();
+    toast('Apport noté au ' + F_SHORT.format(parseISO(p.transmisLe)) + '.');
+  },
+  chantier(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const montant = num(fd.get('montant'));
+    if (!montant) { toast('Indique le montant HT du chantier.'); return; }
+    p.chantiers = p.chantiers || [];
+    const cid = form.dataset.ch;
+    let c = cid ? p.chantiers.find(x => x.id === cid) : null;
+    if (!c) { c = { id: uid('c_') }; p.chantiers.unshift(c); addLog(p, 'note', 'Chantier noté : ' + fmtEur(montant) + ' HT.'); }
+    Object.assign(c, { label: String(fd.get('label') || '').trim() || 'Chantier', montant, statut: CH_STATUTS[fd.get('statut')] ? String(fd.get('statut')) : 'devis', date: isDate(fd.get('date')) ? String(fd.get('date')) : todayISO() });
+    if (p.stage !== 'perdu' && stageIndex(p.stage) < stageIndex('client')) { p.stage = 'client'; p.next = { text: 'Prendre des nouvelles', date: addDays(todayISO(), 30) }; }
+    commitProspect(p.id);
+    closeDialog(); refresh();
+    toast('Commission : ' + fmtEur(commission(montant)) + '.');
+  },
+  questions(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    ['q1', 'q2', 'q3'].forEach(k => { p[k] = String(fd.get(k) || '').trim(); });
+    commitProspect(p.id);
+    closeDialog(); refresh();
+  },
+  ask(fd, form) {
+    const q = QUICK.find(x => x.id === form.dataset.q);
+    const x = String(fd.get('x') || '').trim();
+    if (!q || !x) return;
+    const p = form.dataset.id ? S.prospects[form.dataset.id] : null;
+    closeDialog();
+    if (UI.tab !== 'assistante') go('assistante');
+    askAssistant(q, p, x);
+  },
+  chat(fd) {
+    const t = String(fd.get('q') || '').trim();
+    if (!t || UI.chatBusy) return;
+    const p = UI.ctx ? S.prospects[UI.ctx] : null;
+    if (!S.onboarding.assistante) { S.onboarding.assistante = true; saveLocal(); }
+    if (!aiUsable()) { openDialog(dlgBridge(kbText() + '\n\n' + (p ? ctxText(p) + '\n\n' : '') + 'Ma question : ' + t, p ? p.id : '')); return; }
+    assistantSend(t, t + (p ? '\n\n' + ctxText(p) : ''), null);
+  },
+  'bridge-save'(fd, form) {
+    const rep = String(fd.get('rep') || '').trim();
+    if (!rep) { toast('Colle d’abord la réponse de l’IA.'); return; }
+    S.chat.push({ role: 'assistant', content: rep.slice(0, 6000) });
+    S.chat = S.chat.slice(-30);
+    const p = S.prospects[form.dataset.id];
+    if (p) { addLog(p, 'note', rep); commitProspect(p.id); } else saveLocal();
+    closeDialog(); refresh();
+    if (UI.tab === 'assistante') renderChat();
+    toast(p ? 'Réponse gardée dans la fiche de ' + p.nom + '.' : 'Réponse gardée dans la conversation.');
+  },
+  async coller(fd) {
+    const txt = String(fd.get('txt') || '').trim();
+    if (!txt) return;
+    const btn = $('#co-go');
+    if (btn) { btn.disabled = true; btn.textContent = 'Lecture en cours…'; }
+    const prompt = 'Extrais une fiche prospect de ce texte copié depuis Internet (annuaire, site, Google Maps).\nRéponds uniquement avec un objet JSON de cette forme : {"nom":"", "type":"gestion ou syndic ou saisonnier ou transaction ou assurance ou entreprise ou particulier ou autre", "ville":"", "adresse":"", "tel":"", "email":"", "site":"", "contactNom":"", "contactRole":"", "lots":null, "notes":"une phrase sur ce que fait l’entreprise, d’après le texte"}\nSignification des types : gestion = agence de gestion locative ou administrateur de biens ; syndic = syndic de copropriété ; saisonnier = conciergerie ou location de courte durée ; transaction = agence de vente.\nN’invente rien : laisse vide ce qui n’est pas dans le texte.\n\nTexte :\n' + txt.slice(0, 5000);
+    try {
+      const d = await runAI(prompt, { json: true, tier: 'quick' });
+      const pre = {};
+      if (d && typeof d === 'object') ['nom', 'ville', 'adresse', 'tel', 'email', 'site', 'contactNom', 'contactRole', 'notes'].forEach(k => { if (d[k]) pre[k] = String(d[k]).slice(0, 300); });
+      if (d && TYPES[d.type]) pre.type = d.type;
+      if (d && num(d.lots)) pre.lots = num(d.lots);
+      if (!pre.nom) { toast('Aucun nom d’entreprise trouvé dans ce texte. Remplis la fiche à la main.'); }
+      openDialog(dlgProspectForm(null, pre));
+    } catch (e) {
+      if (e && e.code === 'cancelled') return;
+      toast(aiErrorText(e));
+      openDialog(dlgProspectForm(null, { notes: txt.slice(0, 600) }));
+    }
+  },
+  async cr(fd, form, ev) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const txt = String(fd.get('txt') || '').trim();
+    if (!txt) return;
+    const mode = ev && ev.submitter && ev.submitter.value === 'ai' && aiUsable() ? 'ai' : 'note';
+    if (mode === 'note') { closeDialog(); openDialog(dlgCRPreview(p, { resume: txt, dansJours: 3 }, txt)); return; }
+    const btn = $('#cr-go');
+    if (btn) { btn.disabled = true; btn.textContent = 'Lecture en cours…'; }
+    const prompt = 'Voici mes notes brutes après un échange avec un prospect. Transforme-les en fiche.\nRéponds uniquement avec un objet JSON de cette forme : {"resume":"3 phrases au plus, à la première personne", "q1":"travaux qu’ils font faire le plus souvent et à quel rythme, vide si pas abordé", "q2":"qui s’en occupe aujourd’hui et ce qui pose problème, vide si pas abordé", "q3":"chantier à venir pour lequel un devis est possible, vide si pas abordé", "lots":null, "contactNom":"", "contactRole":"", "prochaineAction":"action précise à faire ensuite", "dansJours":3, "etape":"discussion ou client, ou vide si pas de changement"}\nlots = nombre de logements gérés, si c’est dit ; dansJours = nombre de jours avant la prochaine action, de 0 à 60.\nN’invente rien : laisse vide ou null ce qui n’est pas dans les notes.\nDate du jour : ' + todayISO() + '.\n\n' + ctxText(p) + '\n\nMes notes :\n' + txt.slice(0, 5000);
+    try {
+      const d = await runAI(prompt, { json: true });
+      openDialog(dlgCRPreview(p, d && typeof d === 'object' ? d : { resume: txt }, txt));
+    } catch (e) {
+      if (e && e.code === 'cancelled') return;
+      toast(aiErrorText(e));
+      openDialog(dlgCRPreview(p, { resume: txt, dansJours: 3 }, txt));
+    }
+  },
+  'cr-apply'(fd, form) {
+    const p = S.prospects[form.dataset.id];
+    if (!p) return;
+    const str = k => String(fd.get(k) || '').trim();
+    addLog(p, 'rdv', str('resume') || str('brut'));
+    if (str('contactNom')) p.contactNom = str('contactNom');
+    if (str('contactRole')) p.contactRole = str('contactRole');
+    if (num(fd.get('lots'))) p.lots = num(fd.get('lots'));
+    ['q1', 'q2', 'q3'].forEach(k => { if (str(k)) p[k] = str(k); });
+    const et = str('etape');
+    if (et && stageOf(et) && p.stage !== 'perdu' && stageIndex(et) > stageIndex(p.stage)) p.stage = et;
+    else if (p.stage === 'a_contacter') p.stage = 'discussion';
+    const date = isDate(fd.get('date')) ? String(fd.get('date')) : addDays(todayISO(), 3);
+    p.next = { text: str('nextText') || (stageOf(p.stage) || STAGES[1]).next, date };
+    commitProspect(p.id);
+    closeDialog();
+    if (UI.sheet && UI.sheet.id === p.id) refresh(); else { render(); openSheet('prospect', p.id); }
+    toast('Compte rendu enregistré.');
+  },
+  settings(fd) {
+    S.profile.prenom = String(fd.get('prenom') || '').trim().slice(0, 40);
+    S.profile.named = true;
+    S.settings.objectif = Math.max(1, Math.min(200, Math.round(Number(fd.get('objectif')) || 10)));
+    S.settings.lassTel = String(fd.get('lassTel') || '').trim().slice(0, 30);
+    S.settings.clients = String(fd.get('clients') || '').slice(0, 2000);
+    let changed = 0;
+    allProspects().forEach(p => { const before = p.dejaClient; if (checkDejaClient(p) !== before) { changed++; queueWrite(p.id); } });
+    commitApp();
+    renderSheet(); render();
+    toast('Réglages enregistrés.' + (changed ? ' ' + changed + ' fiche' + (changed > 1 ? 's' : '') + ' mise' + (changed > 1 ? 's' : '') + ' à jour.' : ''));
+  },
+  async restore(fd) {
+    let txt = String(fd.get('txt') || '').trim();
+    const file = fd.get('file');
+    if (!txt && file && file.size) { try { txt = await file.text(); } catch (e) { txt = ''; } }
+    if (!txt) { toast('Colle le texte de ta sauvegarde, ou choisis le fichier.'); return; }
+    let st;
+    try { st = parseBackup(txt); } catch (e) { toast('Ce texte n’est pas une sauvegarde de l’outil. Vérifie que tu l’as copié en entier.'); return; }
+    const keepChat = S.chat;
+    const synced = S.meta.cloudSynced;
+    S = st; S.chat = keepChat; S.meta.lastBackup = todayISO(); S.meta.changes = 0;
+    S.meta.pending = {}; S.meta.cloudSynced = synced; S.meta.appSynced = synced;
+    saveLocal();
+    if (cloud.on && !cloud.migration) pushAllToCloud();
+    else if (synced) { Object.keys(S.prospects).forEach(queueWrite); queueWrite('__app'); }
+    closeDialog(); UI.sheet = null; renderSheet(); render();
+    toast(count() + ' prospect' + (count() > 1 ? 's restaurés.' : ' restauré.'));
+  }
+};
+
+/* ===== Actions ===== */
+function markBackup() { S.meta.lastBackup = todayISO(); S.meta.changes = 0; saveLocal(); }
+const ACTIONS = {
+  tab(el) { go(el.dataset.tab); },
+  open(el) { closeDialog(); if (S.prospects[el.dataset.id]) openSheet('prospect', el.dataset.id); },
+  sheet(el) {
+    if (el.dataset.type === 'guide' && !S.onboarding.guide) { S.onboarding.guide = true; saveLocal(); }
+    openSheet(el.dataset.type);
+  },
+  'close-sheet'() { closeSheet(); },
+  'close-dialog'() { closeDialog(); },
+  'sync-info'() { openDialog(dlgSync()); },
+  add() { openDialog(dlgProspectForm(null)); },
+  edit(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgProspectForm(p)); },
+  filter(el) { UI.filter = el.dataset.f; render(); },
+  'filter-go'(el) { UI.filter = el.dataset.f; go('prospects'); },
+  'reco-filter'(el) { UI.recoFilter = el.dataset.f; UI.recoAll = false; render(); },
+  'reco-more'() { UI.recoAll = true; render(); },
+  'reco-add'(el) {
+    const r = RECOS.find(x => x.id === el.dataset.id);
+    if (!r || S.reco[r.id]) return;
+    const p = newProspect({ nom: r.nom, type: r.type, reseau: r.reseau, zone: r.zone, ville: r.ville, adresse: r.adresse, tel: r.tel, site: r.site, lots: r.lots, f: recoFlags(r), source: 'agent', recoId: r.id, notes: r.conseil });
+    addLog(p, 'note', 'Recommandé par l’agent. ' + r.pourquoi.join(' '));
+    checkDejaClient(p);
+    S.prospects[p.id] = p; S.reco[r.id] = 'added';
+    commitProspect(p.id); commitApp();
+    render();
+    toast(r.nom + ' ajouté à tes prospects.');
+  },
+  'reco-skip'(el) { S.reco[el.dataset.id] = 'dismissed'; commitApp(); render(); },
+  log(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgLog(p, !!el.dataset.done)); },
+  next(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgNext(p)); },
+  'stage-pick'(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgStage(p)); },
+  'stage-next'(el) {
+    const p = S.prospects[el.dataset.id];
+    if (!p) return;
+    const nx = STAGES[stageIndex(p.stage) + 1];
+    if (nx) ACTIONS['set-stage']({ dataset: { id: p.id, stage: nx.id } });
+  },
+  'set-stage'(el) {
+    const p = S.prospects[el.dataset.id];
+    const id = el.dataset.stage;
+    if (!p || !stageOf(id)) return;
+    if (id === 'transmis' && !p.transmisLe) { openDialog(dlgTransmettre(p)); return; }
+    setStage(p, id);
+    commitProspect(p.id);
+    closeDialog(); refresh();
+    toast('Étape : ' + stageLabel(id) + '.');
+  },
+  perdu(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgPerdu(p)); },
+  revive(el) {
+    const p = S.prospects[el.dataset.id];
+    if (!p) return;
+    p.perduRaison = ''; p.stage = '';
+    setStage(p, firstContact(p) ? 'discussion' : 'a_contacter');
+    p.next = { text: 'Reprendre contact', date: todayISO() };
+    commitProspect(p.id); refresh();
+  },
+  transmit(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgTransmettre(p)); },
+  chantier(el) {
+    const p = S.prospects[el.dataset.id];
+    if (!p) return;
+    const ch = el.dataset.ch ? (p.chantiers || []).find(c => c.id === el.dataset.ch) : null;
+    openDialog(dlgChantier(p, ch));
+  },
+  'chantier-del'(el) {
+    const p = S.prospects[el.dataset.id];
+    if (!p) return;
+    p.chantiers = (p.chantiers || []).filter(c => c.id !== el.dataset.ch);
+    commitProspect(p.id); closeDialog(); refresh();
+  },
+  questions(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgQuestions(p)); },
+  delete(el) {
+    const p = S.prospects[el.dataset.id];
+    if (p) openDialog(dlgConfirm({ title: 'Supprimer ce prospect ?', text: p.nom + ' et tout son historique seront effacés. Pour le garder en mémoire, choisis plutôt « Perdu ou plus tard ».', yes: 'Supprimer', action: 'do-delete', id: p.id, danger: true }));
+  },
+  'do-delete'(el) {
+    const id = el.dataset.id;
+    if (!S.prospects[id]) return;
+    const rid = S.prospects[id].recoId;
+    delete S.prospects[id];
+    if (rid && S.reco[rid] === 'added') { delete S.reco[rid]; commitApp(); }
+    if (UI.ctx === id) UI.ctx = '';
+    touch(); saveLocal(); queueWrite(id);
+    closeDialog(); UI.sheet = null; renderSheet(); render();
+    toast('Prospect supprimé.');
+  },
+  avis(el) { prospectAvis(el.dataset.id); },
+  quick(el) { runQuick(el.dataset.q, ''); },
+  'quick-for'(el) {
+    const id = el.dataset.id;
+    UI.ctx = id;
+    const q = QUICK.find(x => x.id === el.dataset.q);
+    if (q && !q.special && !q.ask) go('assistante');
+    runQuick(el.dataset.q, id);
+  },
+  async 'copy-msg'(el) {
+    const m = S.chat[Number(el.dataset.i)];
+    if (!m) return;
+    toast((await copyText(m.content)) ? 'Copié.' : 'La copie est bloquée ici : sélectionne le texte à la main.');
+  },
+  'note-msg'(el) {
+    const m = S.chat[Number(el.dataset.i)];
+    const p = S.prospects[UI.ctx];
+    if (!m || !p) return;
+    addLog(p, 'note', m.content.slice(0, 1800));
+    commitProspect(p.id);
+    toast('Ajouté à la fiche de ' + p.nom + '.');
+  },
+  'ai-stop'() { if (ai.ctl) ai.ctl.abort(); },
+  bridge(el) {
+    const m = S.chat[Number(el.dataset.i)];
+    if (m) openDialog(dlgBridge(kbText() + '\n\n' + m.content, UI.ctx && S.prospects[UI.ctx] ? UI.ctx : ''));
+  },
+  'bridge-advice'() { openDialog(dlgBridge(advicePrompt(), '')); },
+  'bridge-avis'(el) { const p = S.prospects[el.dataset.id]; if (p) openDialog(dlgBridge(avisPrompt(p), p.id)); },
+  'chat-clear'() { S.chat = []; saveLocal(); render(); },
+  advice() { agentAdvice(); },
+  coller() { openDialog(dlgColler()); },
+  async 'copy-el'(el) {
+    const t = document.getElementById(el.dataset.el);
+    if (!t) return;
+    const txt = (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' ? t.value : t.textContent).replace(/[\u00A0\u202F]/g, ' ');
+    toast((await copyText(txt)) ? 'Copié.' : 'La copie est bloquée ici : sélectionne le texte à la main.');
+  },
+  backup() { openDialog(dlgBackup()); },
+  async 'backup-copy'() {
+    if (await copyText(backupText())) { markBackup(); toast('Sauvegarde copiée. Colle-la dans un message pour toi.'); refresh(); }
+    else { const t = $('#bk-txt'); if (t) { t.focus(); t.select(); } toast('Sélectionne tout le texte, puis copie-le à la main.'); }
+  },
+  async 'backup-dl'() {
+    if (!plat.downloads) return;
+    try { await plat.downloads.save({ filename: 'amela-prospection-' + todayISO() + '.json', data: backupText() }); markBackup(); toast('Sauvegarde téléchargée.'); refresh(); }
+    catch (e) { if (!(e && e.code === 'declined')) toast('Le téléchargement n’a pas abouti. Utilise « Copier la sauvegarde ».'); }
+  },
+  async csv() {
+    const data = csvText();
+    if (plat.downloads) { try { await plat.downloads.save({ filename: 'prospects-amela-' + todayISO() + '.csv', data }); toast('Tableau téléchargé.'); return; } catch (e) { if (e && e.code === 'declined') return; } }
+    toast((await copyText(data)) ? 'Tableau copié : colle-le dans un tableur.' : 'L’export est bloqué ici.');
+  },
+  restore() { openDialog(dlgRestore()); },
+  async 'cloud-test'() {
+    if (!plat.db) return;
+    try { await plat.db.doc('app/ping').set({ at: nowStamp() }); closeDialog(); startCloud(); toast('Sauvegarde en ligne activée.'); }
+    catch (e) { toast('Pas d’accès en écriture pour l’instant. Tes données restent sur cet appareil.'); }
+  },
+  migrate() { pushAllToCloud(); toast('Tes prospects sont envoyés en ligne.'); },
+  'take-remote'() { takeRemote(); toast('Version en ligne reprise.'); },
+  'migrate-later'() { stopCloud(); toast('D’accord. Tes prospects restent sur cet appareil.'); },
+  'onb-hide'() { S.onboarding.masque = true; saveLocal(); render(); },
+  signout() { openDialog(dlgConfirm({ title: 'Se déconnecter ?', text: 'Tes fiches restent enregistrées en ligne. Cet appareil les oublie : il faudra ressaisir ton code pour les retrouver.' + (Object.keys(S.meta.pending || {}).length ? ' Attention : des modifications n’ont pas encore été envoyées, elles seraient perdues.' : ''), yes: 'Se déconnecter', action: 'do-signout' })); },
+  'do-signout'() { if (AUTONOME) sbSignOut(); },
+  wipe() { openDialog(dlgConfirm({ title: 'Tout effacer ?', text: (cloud.on ? 'Tous les prospects, les échanges et les réglages seront effacés, sur cet appareil et en ligne.' : 'Tous les prospects, les échanges et les réglages de cet appareil seront effacés.') + ' Fais une sauvegarde avant si tu veux les garder.', yes: 'Tout effacer', action: 'do-wipe', danger: true })); },
+  'do-wipe'() {
+    const ids = Object.keys(S.prospects);
+    const synced = S.meta.cloudSynced;
+    S = defaultState(); S.meta.cloudSynced = synced; S.meta.appSynced = synced; saveLocal();
+    if (cloud.on || synced) { ids.forEach(queueWrite); queueWrite('__app'); }
+    UI.ctx = ''; UI.advice = '';
+    closeDialog(); UI.sheet = null; renderSheet(); go('accueil');
+    toast('Tout est effacé.');
+  }
+};
+
+/* ===== Démarrage ===== */
+function bind() {
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) { if (e.target.id === 'dialog') closeDialog(); return; }
+    const fn = ACTIONS[el.dataset.action];
+    if (!fn) return;
+    if (el.tagName === 'A' && el.getAttribute('href') && el.getAttribute('href').charAt(0) === '#') e.preventDefault();
+    fn(el, e);
+  });
+  document.addEventListener('submit', e => {
+    const f = e.target.closest('form[data-form]');
+    if (!f) return;
+    e.preventDefault();
+    const fn = FORMS[f.dataset.form];
+    if (fn) fn(new FormData(f), f, e);
+  });
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'q') { UI.q = t.value; const l = $('#plist'); if (l) setHTML(l, prospectList()); }
+    else if (t.id === 'calc') { const o = $('#calc-out'); if (o) o.textContent = fmtEur(commission(num(t.value) || 0)); }
+    else if (t.id === 'tx-msg') { const a = $('#tx-wa'); if (a) a.href = waLass(t.value); }
+  });
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'commune') { UI.commune = t.value; const l = $('#slinks'); if (l) setHTML(l, searchLinks()); }
+    else if (t.id === 'ctx') { UI.ctx = t.value; renderChat(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if (!$('#dialog').hidden) closeDialog(); else if (UI.sheet) closeSheet(); }
+  });
+  window.addEventListener('hashchange', () => { const t = currentTab(); if (t !== UI.tab) { UI.tab = t; UI.sheet = null; renderSheet(); render(); } });
+}
+function boot() {
+  plat.ready.then(async () => {
+    await loadShared();
+    refresh();
+    if (await canWriteCloud()) startCloud();
+    refresh();
+  }).catch(() => {});
+}
+function start() {
+  loadLocal();
+  UI.tab = currentTab();
+  bind();
+  render();
+  if (AUTONOME) {
+    /* Hors de Claude : dès que la connexion revient, la sauvegarde en ligne reprend toute seule. */
+    const retry = async () => { if (!cloud.on && !cloud.retry && remote.code && plat.db) { cloud.retry = true; try { if (await canWriteCloud()) startCloud(); } finally { cloud.retry = false; } } };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') retry(); });
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+    if (!remote.code) { sbGate(''); return; }
+  }
+  boot();
+}
+start();
+
+})();
+</script>
+</body>
+</html>
