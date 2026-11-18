@@ -472,7 +472,7 @@ const BASE_RECOS = [];
    Chaque personne entre une fois son code personnel sur chaque appareil.
    Ce fichier imite la petite partie de la base de Claude que le reste du code utilise :
    doc().get/set/delete/onSnapshot et collection().get/onSnapshot. */
-const SB = { url: 'https://pvelbkaltnrgxwgammmv.supabase.co/rest/v1/rpc/prosp_sync', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWxia2FsdG5yZ3h3Z2FtbW12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjM3NDcsImV4cCI6MjEwMzQzOTc0N30.NJITj_9aMyYBBAglW541sZxd4-iB_12S9lb55nU6sQQ', ia: 'https://pvelbkaltnrgxwgammmv.supabase.co/functions/v1/prosp-ia' };
+const SB = { url: 'https://pvelbkaltnrgxwgammmv.supabase.co/rest/v1/rpc/prosp_sync', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWxia2FsdG5yZ3h3Z2FtbW12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjM3NDcsImV4cCI6MjEwMzQzOTc0N30.NJITj_9aMyYBBAglW541sZxd4-iB_12S9lb55nU6sQQ', ia: 'https://pvelbkaltnrgxwgammmv.supabase.co/functions/v1/prosp-ia', notif: 'https://pvelbkaltnrgxwgammmv.supabase.co/functions/v1/prosp-notif', vapid: 'BC8eOtlmO8XuXcqIS28BUJYGpoI98wH_eGKPU544txRoInlfKHOR_9gvBjg_hi5FEIfh5K2gGFhyxxS4Orak9QQ' };
 const CODE_KEY = 'amela-prospection-code';
 const CACHE_KEY = 'amela-prospection-cache';
 const META = Object.freeze({ fromCache: false, hasPendingWrites: false });
@@ -774,6 +774,64 @@ sbSample.json = async (input, o) => {
   const debut = t.indexOf('{'), fin = t.lastIndexOf('}');
   try { return JSON.parse(debut >= 0 && fin > debut ? t.slice(debut, fin + 1) : t); } catch (e) { throw { code: 'invalid_json', message: 'réponse illisible', text: r.text }; }
 };
+/* ===== Rappels sur le téléphone : notifications web, chiffrées pour cet appareil ===== */
+const notif = { etat: 'inconnu', occupe: false };
+const NOTIF_PLUS_TARD = 'amela-prospection-rappels-plus-tard';
+const estIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const estInstallee = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const pageSure = () => location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+function b64uOctets(s) { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+async function sbRpcPage(nom, args) {
+  const res = await fetch(SB.url.replace(/prosp_sync$/, nom), { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB.key, Authorization: 'Bearer ' + SB.key }, body: JSON.stringify(args) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function sbNotifAbonnement() {
+  if (!('serviceWorker' in navigator)) return null;
+  const reg = await navigator.serviceWorker.getRegistration();
+  return reg && reg.pushManager ? reg.pushManager.getSubscription() : null;
+}
+async function sbNotifEtat() {
+  if (!pageSure() || !('serviceWorker' in navigator)) return 'non-supporte';
+  if (!('PushManager' in window) || !('Notification' in window)) return estIOS() && !estInstallee() ? 'ios-installer' : 'non-supporte';
+  if (Notification.permission === 'denied') return 'refuse';
+  try { const sub = await sbNotifAbonnement(); return sub && Notification.permission === 'granted' ? 'actif' : 'inactif'; } catch (e) { return 'inactif'; }
+}
+function sbNotifMaj() { return sbNotifEtat().then(e => { if (e !== notif.etat) { notif.etat = e; refresh(); } return e; }); }
+async function sbNotifEssai() {
+  const sub = await sbNotifAbonnement();
+  if (!sub) return 'inactif';
+  try {
+    const res = await fetch(SB.notif, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: remote.code, essai: true, endpoint: sub.endpoint }) });
+    if (res.status === 429) return 'attente';
+    return res.ok ? 'ok' : 'erreur';
+  } catch (e) { return 'reseau'; }
+}
+/* À appeler directement depuis un geste (toucher) : le navigateur ne demande l'autorisation qu'à ce moment-là. */
+async function sbNotifActiver() {
+  if (notif.occupe) return 'occupe';
+  notif.occupe = true;
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { notif.etat = perm === 'denied' ? 'refuse' : 'inactif'; return perm === 'denied' ? 'refuse' : 'annule'; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uOctets(SB.vapid) });
+    const j = await sbRpcPage('prosp_notif_abonner', { p_code: remote.code, p_abonnement: sub.toJSON() });
+    if (!j || !j.ok) throw new Error((j && j.erreur) || 'abonnement');
+    notif.etat = 'actif';
+    try { localStorage.removeItem(NOTIF_PLUS_TARD); } catch (e) { /* rien */ }
+    return await sbNotifEssai();
+  } catch (e) {
+    return 'erreur';
+  } finally { notif.occupe = false; refresh(); }
+}
+async function sbNotifDesactiver() {
+  try {
+    const sub = await sbNotifAbonnement();
+    if (sub) { const fin = sub.endpoint; await sub.unsubscribe().catch(() => {}); await sbRpcPage('prosp_notif_desabonner', { p_code: remote.code, p_endpoint: fin }).catch(() => {}); }
+  } finally { notif.etat = 'inactif'; refresh(); }
+}
 window.claude = { use: async n => (n === 'db' ? sbDb : n === 'downloads' ? sbDownloads : n === 'sample' ? sbSample : null) };
 
 /* ===== Outils ===== */
@@ -1349,7 +1407,8 @@ const IC = {
   chat: '<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4.500 3.500V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>',
   globe: '<circle cx="12" cy="12" r="8.500"/><path d="M3.500 12h17M12 3.500c2.500 2.500 2.500 14.500 0 17M12 3.500c-2.500 2.500-2.500 14.500 0 17"/>',
   pin: '<path d="M12 21s6.500-6 6.500-11a6.500 6.500 0 0 0-13 0C5.500 15 12 21 12 21z"/><circle cx="12" cy="10" r="2.300"/>',
-  spark: '<path d="M12 4l1.800 4.700L18.500 10.500l-4.700 1.800L12 17l-1.800-4.700L5.500 10.500l4.700-1.800z"/><path d="M18.500 16.500v3M17 18h3"/>'
+  spark: '<path d="M12 4l1.800 4.700L18.500 10.500l-4.700 1.800L12 17l-1.800-4.700L5.500 10.500l4.700-1.800z"/><path d="M18.500 16.500v3M17 18h3"/>',
+  bell: '<path d="M6.500 16.500V11a5.500 5.500 0 0 1 11 0v5.500l1.500 1.500H5z"/><path d="M10 20a2 2 0 0 0 4 0"/>'
 };
 const ic = n => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + IC[n] + '</svg>';
 /* Deux colonnes sur grand écran ; sur téléphone elles s'empilent dans le même ordre. */
@@ -1452,6 +1511,33 @@ function migrationCard() {
   return `<div class="card gold"><h3>Mettre tes prospects en ligne ?</h3><p>${n} prospect${n > 1 ? 's sont enregistrés' : ' est enregistré'} sur cet appareil. En ligne, tu les retrouves partout et Lass peut suivre ton avancée.</p>
     <div class="row"><button type="button" class="btn" data-action="migrate">Envoyer en ligne</button><button type="button" class="btn ghost" data-action="migrate-later">Plus tard</button></div></div>`;
 }
+/* Rappels : proposer de les activer, sur l'appareil où l'on est (version indépendante seulement). */
+function rappelsCard() {
+  if (!AUTONOME || !remote.code) return '';
+  let plusTard = false;
+  try { plusTard = !!localStorage.getItem(NOTIF_PLUS_TARD); } catch (e) { /* rien */ }
+  if (plusTard) return '';
+  if (notif.etat === 'inactif') return `<section class="card soft"><h3>Reçois tes rappels sur ce téléphone</h3><p class="small">Chaque matin de semaine à 9 h : les agences à appeler ou à relancer ce jour-là. Le lundi, les nouveaux prospects trouvés par l’agent. Rien d’autre.</p>
+    <div class="row"><button type="button" class="btn sm" data-action="notif-on">${ic('bell')}Activer les rappels</button><button type="button" class="btn ghost sm" data-action="notif-later">Plus tard</button></div></section>`;
+  if (notif.etat === 'ios-installer') return `<section class="card soft"><h3>Reçois tes rappels sur ton iPhone</h3><p class="small">Sur iPhone, les rappels marchent quand l’appli est sur ton écran d’accueil. Dans Safari, touche le bouton Partager, puis « Sur l’écran d’accueil ». Ouvre ensuite l’appli depuis sa nouvelle icône : ce message te proposera d’activer les rappels.</p>
+    <div class="row"><button type="button" class="btn ghost sm" data-action="notif-later">Plus tard</button></div></section>`;
+  return '';
+}
+function rappelsReglages() {
+  if (!AUTONOME) return '';
+  const e = notif.etat;
+  const txt = {
+    actif: 'Activés sur cet appareil : chaque matin de semaine à 9 h, tu reçois tes actions du jour.',
+    inactif: 'Pas encore activés sur cet appareil.',
+    refuse: 'Les notifications sont bloquées pour cette page. Autorise-les dans les réglages du navigateur (ou du téléphone), puis reviens ici.',
+    'ios-installer': 'Sur iPhone, ajoute d’abord l’appli à ton écran d’accueil (Safari, bouton Partager, « Sur l’écran d’accueil »), puis ouvre-la depuis son icône.',
+    'non-supporte': 'Ce navigateur ne reçoit pas de notifications. Sur téléphone, utilise Chrome (Android) ou l’appli ajoutée à l’écran d’accueil (iPhone).',
+    inconnu: 'Vérification…'
+  }[e] || '';
+  const btn = e === 'actif' ? '<button type="button" class="btn sm" data-action="notif-test">Recevoir un essai</button><button type="button" class="btn ghost sm" data-action="notif-off">Désactiver</button>'
+    : e === 'inactif' ? `<button type="button" class="btn sm" data-action="notif-on">${ic('bell')}Activer les rappels</button>` : '';
+  return `<section class="sec"><h2>Rappels sur cet appareil</h2><div class="card"><p class="small">${esc(txt)}</p>${btn ? '<div class="row">' + btn + '</div>' : ''}</div></section>`;
+}
 function onboardingCard() {
   if (S.onboarding.masque) return '';
   const steps = [
@@ -1485,7 +1571,7 @@ function viewAccueil() {
   else if (!due.length) lede = 'Rien d’urgent aujourd’hui. Profites-en pour ouvrir de nouveaux contacts.';
   else lede = due.length === 1 ? 'Une action t’attend aujourd’hui.' : due.length + ' actions t’attendent aujourd’hui.';
   let h = `<header class="stack"><p class="eyebrow">${esc(cap(F_LONG.format(new Date())))}</p><h1>Bonjour${name}</h1><p class="lede">${lede}</p></header>`;
-  let m = welcomeCard() + storageWarning() + migrationCard() + onboardingCard();
+  let m = welcomeCard() + storageWarning() + migrationCard() + rappelsCard() + onboardingCard();
 
   if (due.length || fresh.length || noplan.length) {
     m += `<section class="sec"><div class="sec-head"><h2>À faire aujourd’hui</h2><span class="count">${due.length} action${due.length > 1 ? 's' : ''}</span></div>`;
@@ -1955,6 +2041,7 @@ function sheetReglages() {
       <div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button><button type="button" class="btn ghost sm" data-action="restore">Restaurer une sauvegarde</button><button type="button" class="btn ghost sm" data-action="csv">Exporter en tableau</button></div>
       ${!cloud.on && plat.db ? '<div><button type="button" class="linkbtn" data-action="cloud-test">Essayer la sauvegarde en ligne</button></div>' : ''}
       <p class="small muted">${count()} prospect${count() > 1 ? 's' : ''} · ${S.meta.lastBackup ? 'dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) : 'aucune sauvegarde pour l’instant'}</p></div></section>
+    ${rappelsReglages()}
     ${AUTONOME ? `<section class="sec"><h2>Cet appareil</h2><div class="card"><p class="small">Ton code d’accès est enregistré sur cet appareil : ${esc(codeJoli(remote.code).replace(/[A-Z0-9](?=.{5})/g, '•'))}</p><div class="row"><button type="button" class="btn ghost sm" data-action="signout">Se déconnecter de cet appareil</button></div></div></section>` : ''}
     <section class="sec"><h2>Repartir de zéro</h2><div class="card"><p class="small">${cloud.on ? 'Efface tous les prospects, les échanges et les réglages, sur cet appareil et en ligne. Lass ne les verra plus non plus.' : 'Efface tous les prospects, les échanges et les réglages de cet appareil.'}</p><div class="row"><button type="button" class="btn danger sm" data-action="wipe">Tout effacer</button></div></div></section>`;
   return { title: 'Réglages et sauvegarde', html: cols(a, b) };
@@ -2493,6 +2580,13 @@ const ACTIONS = {
   'onb-hide'() { S.onboarding.masque = true; saveLocal(); render(); },
   signout() { openDialog(dlgConfirm({ title: 'Se déconnecter ?', text: 'Tes fiches restent enregistrées en ligne. Cet appareil les oublie : il faudra ressaisir ton code pour les retrouver.' + (Object.keys(S.meta.pending || {}).length ? ' Attention : des modifications n’ont pas encore été envoyées, elles seraient perdues.' : ''), yes: 'Se déconnecter', action: 'do-signout' })); },
   'do-signout'() { if (AUTONOME) sbSignOut(); },
+  'notif-on'() {
+    if (!AUTONOME) return;
+    sbNotifActiver().then(r => toast({ ok: 'C’est activé. Une notification d’essai arrive.', attente: 'C’est activé.', refuse: 'Tu as refusé les notifications. Tu pourras les autoriser dans les réglages du navigateur.', annule: 'Rappels non activés.', erreur: 'Les rappels n’ont pas pu être activés. Réessaie dans un moment.', reseau: 'C’est activé, mais l’essai n’a pas pu partir (pas de réseau).', occupe: 'Un instant…' }[r] || 'C’est activé.'));
+  },
+  'notif-test'() { if (AUTONOME) sbNotifEssai().then(r => toast(r === 'ok' ? 'Notification d’essai envoyée.' : r === 'attente' ? 'Un essai vient de partir : attends quelques secondes.' : 'L’essai n’a pas pu partir. Réessaie dans un moment.')); },
+  'notif-off'() { if (AUTONOME) sbNotifDesactiver().then(() => toast('Rappels désactivés sur cet appareil.')); },
+  'notif-later'() { try { localStorage.setItem(NOTIF_PLUS_TARD, '1'); } catch (e) { /* rien */ } refresh(); toast('D’accord. Tu pourras les activer dans Outils, Réglages.'); },
   wipe() { openDialog(dlgConfirm({ title: 'Tout effacer ?', text: (cloud.on ? 'Tous les prospects, les échanges et les réglages seront effacés, sur cet appareil et en ligne.' : 'Tous les prospects, les échanges et les réglages de cet appareil seront effacés.') + ' Fais une sauvegarde avant si tu veux les garder.', yes: 'Tout effacer', action: 'do-wipe', danger: true })); },
   'do-wipe'() {
     const ids = Object.keys(S.prospects);
@@ -2539,7 +2633,7 @@ function bind() {
   window.addEventListener('hashchange', () => { const t = currentTab(); if (t !== UI.tab) { UI.tab = t; UI.sheet = null; renderSheet(); render(); } });
 }
 function boot() {
-  if (AUTONOME) sbIaActiver(true);
+  if (AUTONOME) { sbIaActiver(true); sbNotifMaj(); }
   plat.ready.then(async () => {
     await loadShared();
     refresh();
