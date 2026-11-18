@@ -1294,7 +1294,7 @@ function commitProspect(id) {
 }
 function commitApp() { touch(); saveLocal(); queueWrite('__app'); }
 function addLog(p, kind, text) { p.log = p.log || []; p.log.unshift({ t: nowStamp(), kind, text: String(text || '').trim().slice(0, 2000) }); if (p.log.length > 60) p.log.length = 60; }
-/* Nom réduit à ses lettres et chiffres, sans accents : « Laforêt » = « La foret », « Procity Gest » = « PROCITY GEST ». */
+/* Nom réduit à ses lettres et chiffres, sans accents : « Laforêt » = « LA FORET ». */
 const nomCle = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
 /* Clients d'AMELA CONCEPT : la liste tenue par Lass (réglages communs) plus celle que l'apporteuse ajoute elle-même. */
 function clientsConnus() {
