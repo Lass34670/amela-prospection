@@ -393,7 +393,7 @@ const CH_STATUTS = { devis: 'Devis signé', facture: 'Facturé', paye: 'Payé pa
 const RAISONS_PERDU = ['Pas de besoin pour l’instant', 'A déjà ses artisans', 'Ne veut pas être démarché', 'Pas le bon moment', 'Autre'];
 
 /* Réglages modifiables sans republier : le document « config/app » de la base peut les remplacer. */
-const CONFIG = { bareme: [[null, 0]], recosVerifiees: '', lassTel: '' };
+const CONFIG = { bareme: [[null, 0]], recosVerifiees: '', lassTel: '', clients: [] };
 
 /* Présentation de l'entreprise : ce que l'apporteuse peut dire. Aucun prix, aucune offre commerciale. */
 const AMELA = {
@@ -1131,6 +1131,7 @@ function applyConfig(d) {
   }
   if (typeof d.recosVerifiees === 'string') CONFIG.recosVerifiees = d.recosVerifiees;
   if (typeof d.lassTel === 'string') CONFIG.lassTel = d.lassTel;
+  if (Array.isArray(d.clients)) CONFIG.clients = d.clients.filter(x => typeof x === 'string').map(x => x.trim()).filter(Boolean).slice(0, 200);
 }
 async function loadShared() {
   if (!plat.db) return;
@@ -1293,10 +1294,15 @@ function commitProspect(id) {
 }
 function commitApp() { touch(); saveLocal(); queueWrite('__app'); }
 function addLog(p, kind, text) { p.log = p.log || []; p.log.unshift({ t: nowStamp(), kind, text: String(text || '').trim().slice(0, 2000) }); if (p.log.length > 60) p.log.length = 60; }
+/* Nom réduit à ses lettres et chiffres, sans accents : « Laforêt » = « La foret », « Procity Gest » = « PROCITY GEST ». */
+const nomCle = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
+/* Clients d'AMELA CONCEPT : la liste tenue par Lass (réglages communs) plus celle que l'apporteuse ajoute elle-même. */
+function clientsConnus() {
+  return (CONFIG.clients || []).concat(String(S.settings.clients || '').split(/[\n,;]+/)).map(nomCle).filter(c => c.length >= 3);
+}
 function estDejaClient(p) {
-  const noms = String(S.settings.clients || '').split(/[\n,;]+/).map(s => s.trim().toLowerCase()).filter(s => s.length >= 3);
-  const n = String(p.nom || '').toLowerCase();
-  return !!n && noms.some(c => n.includes(c));
+  const n = nomCle(p.nom);
+  return !!n && clientsConnus().some(c => n.includes(c));
 }
 function checkDejaClient(p) { p.dejaClient = estDejaClient(p); return p.dejaClient; }
 function setStage(p, id) {
@@ -1942,7 +1948,8 @@ function sheetReglages() {
     <div class="field"><label for="s-prenom">Ton prénom</label><input type="text" id="s-prenom" name="prenom" value="${esc(S.profile.prenom)}" maxlength="40" autocomplete="given-name"></div>
     <div class="field"><label for="s-obj">Objectif de nouveaux contacts par semaine</label><input type="number" id="s-obj" name="objectif" min="1" max="200" step="1" value="${esc(s.objectif)}" inputmode="numeric"></div>
     <div class="field"><label for="s-lass">Numéro WhatsApp de Lass</label><input type="tel" id="s-lass" name="lassTel" value="${esc(s.lassTel || CONFIG.lassTel || '')}" placeholder="06 00 00 00 00" autocomplete="off"><span class="help">Il sert à ouvrir WhatsApp sur la bonne conversation quand tu transmets un contact.</span></div>
-    <div class="field"><label for="s-clients">Entreprises déjà clientes d’AMELA CONCEPT</label><textarea id="s-clients" name="clients" rows="3" placeholder="Un nom par ligne">${esc(s.clients)}</textarea><span class="help">Demande la liste à Lass. Ces contacts ne comptent pas comme un apport : l’outil te prévient.</span></div>
+    ${(CONFIG.clients || []).length ? `<div class="field"><span class="legend">Déjà clients d’AMELA CONCEPT (liste de Lass)</span><p class="small">${esc(CONFIG.clients.join(', '))}</p><span class="help">Ces entreprises ne comptent pas comme un apport : l’outil te prévient si tu en ajoutes une.</span></div>` : ''}
+    <div class="field"><label for="s-clients">${(CONFIG.clients || []).length ? 'Autres entreprises déjà clientes' : 'Entreprises déjà clientes d’AMELA CONCEPT'}</label><textarea id="s-clients" name="clients" rows="3" placeholder="Un nom par ligne">${esc(s.clients)}</textarea><span class="help">${(CONFIG.clients || []).length ? 'Si Lass t’en signale d’autres, ajoute-les ici.' : 'Demande la liste à Lass. Ces contacts ne comptent pas comme un apport : l’outil te prévient.'}</span></div>
     <div class="row"><button class="btn" type="submit">Enregistrer</button></div></form>`;
   const b = `<section class="sec"><h2>Tes données</h2><div class="card"><p>${cloud.on ? 'Elles sont enregistrées en ligne : tu les retrouves sur tous tes appareils.' : 'Elles sont enregistrées sur cet appareil, dans ce navigateur. Ouvre toujours l’outil au même endroit, et fais une sauvegarde chaque semaine.'}</p>
       <div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button><button type="button" class="btn ghost sm" data-action="restore">Restaurer une sauvegarde</button><button type="button" class="btn ghost sm" data-action="csv">Exporter en tableau</button></div>
