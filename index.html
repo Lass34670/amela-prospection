@@ -472,7 +472,7 @@ const BASE_RECOS = [];
    Chaque personne entre une fois son code personnel sur chaque appareil.
    Ce fichier imite la petite partie de la base de Claude que le reste du code utilise :
    doc().get/set/delete/onSnapshot et collection().get/onSnapshot. */
-const SB = { url: 'https://pvelbkaltnrgxwgammmv.supabase.co/rest/v1/rpc/prosp_sync', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWxia2FsdG5yZ3h3Z2FtbW12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjM3NDcsImV4cCI6MjEwMzQzOTc0N30.NJITj_9aMyYBBAglW541sZxd4-iB_12S9lb55nU6sQQ' };
+const SB = { url: 'https://pvelbkaltnrgxwgammmv.supabase.co/rest/v1/rpc/prosp_sync', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2ZWxia2FsdG5yZ3h3Z2FtbW12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjM3NDcsImV4cCI6MjEwMzQzOTc0N30.NJITj_9aMyYBBAglW541sZxd4-iB_12S9lb55nU6sQQ', ia: 'https://pvelbkaltnrgxwgammmv.supabase.co/functions/v1/prosp-ia' };
 const CODE_KEY = 'amela-prospection-code';
 const CACHE_KEY = 'amela-prospection-cache';
 const META = Object.freeze({ fromCache: false, hasPendingWrites: false });
@@ -644,6 +644,7 @@ const sbDownloads = {
   }
 };
 function sbForget() {
+  iaEtat.dispo = false; iaEtat.verifie = 0; iaEtat.bloque = false;
   remote.code = ''; remote.ready = null; remote.loaded = false; remote.depuis = null; remote.mirror = {}; remote.etat = null; remote.etatMaj = '';
   try { localStorage.removeItem(CODE_KEY); } catch (e) { /* rien */ }
 }
@@ -689,7 +690,91 @@ function sbSignOut() {
   try { localStorage.removeItem(LS_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) { /* rien */ }
   location.reload();
 }
-window.claude = { use: async n => (n === 'db' ? sbDb : n === 'downloads' ? sbDownloads : null) };
+/* ===== IA : la page n'a aucune clé. Elle passe par la fonction serveur « prosp-ia » avec son code d'accès. ===== */
+const iaEtat = { dispo: false, verifie: 0, enCours: null, bloque: false };
+function sbIaVerifier(force) {
+  if (!remote.code) return Promise.resolve(false);
+  if (iaEtat.enCours) return iaEtat.enCours;
+  if (!force && iaEtat.verifie && Date.now() - iaEtat.verifie < 5 * 60000) return Promise.resolve(iaEtat.dispo);
+  iaEtat.enCours = fetch(SB.ia, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: remote.code, ping: true }) })
+    .then(r => r.json().catch(() => null)).then(j => (j ? !!j.ia : null)).catch(() => null)
+    .then(v => { iaEtat.enCours = null; if (v !== null) { iaEtat.dispo = v; iaEtat.verifie = Date.now(); } return iaEtat.dispo; });
+  return iaEtat.enCours;
+}
+/* Allume ou éteint l'IA dans l'écran selon la réponse du serveur (clé branchée ou non). */
+function sbIaActiver(force) {
+  if (iaEtat.bloque) return;
+  sbIaVerifier(force).then(dispo => {
+    if (iaEtat.bloque) return;
+    if (ai.off !== !dispo) { ai.off = !dispo; refresh(); }
+  });
+}
+function sbIaErreur(e, statut) {
+  if (e === 'cle' || e === 'credit') { iaEtat.bloque = true; return { code: 'capability_disabled', message: e }; }
+  if (e === 'limite') return { code: 'daily_limit', message: e };
+  if (e === 'occupe') return { code: 'rate_limited', message: e };
+  if (e === 'trop') return { code: 'prompt_too_large', message: e };
+  if (e === 'code') return { code: 'unavailable', message: e };
+  return { code: 'network', message: e || ('HTTP ' + (statut || '')) };
+}
+/* Même contrat que l'IA intégrée de Claude : sample(texte ou messages, { onText, signal }) → { text, truncated }. */
+async function sbSample(input, o) {
+  o = o || {};
+  if (!remote.code) throw { code: 'unavailable', message: 'pas de code' };
+  const ctl = new AbortController();
+  if (o.signal) {
+    if (o.signal.aborted) throw { code: 'cancelled', message: 'annulé' };
+    o.signal.addEventListener('abort', () => ctl.abort(), { once: true });
+  }
+  let res;
+  try {
+    res = await fetch(SB.ia, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+      body: JSON.stringify({ code: remote.code, input, rapide: o.modelTier === 'quick', json: !!o.json }) });
+  } catch (e) { throw ctl.signal.aborted ? { code: 'cancelled', message: 'annulé' } : { code: 'network', message: 'réseau' }; }
+  if (!res.ok || !res.body) {
+    let j = null;
+    try { j = await res.json(); } catch (e) { /* réponse vide */ }
+    throw sbIaErreur(j && j.erreur, res.status);
+  }
+  const lect = res.body.getReader();
+  const dec = new TextDecoder();
+  let tampon = '', text = '', stop = '', err = '', fini = false;
+  try {
+    for (;;) {
+      const { value, done } = await lect.read();
+      if (done) break;
+      tampon += dec.decode(value, { stream: true });
+      let i;
+      while ((i = tampon.indexOf('\n')) >= 0) {
+        const ligne = tampon.slice(0, i);
+        tampon = tampon.slice(i + 1);
+        if (!ligne.trim()) continue;
+        let m;
+        try { m = JSON.parse(ligne); } catch (e) { continue; }
+        if (typeof m.d === 'string' && m.d) {
+          text += m.d;
+          if (o.onText) { try { o.onText({ text, delta: m.d }); } catch (e) { /* affichage seulement */ } }
+        } else if (m.err) err = m.err;
+        else if (m.fin) { fini = true; stop = m.stop || ''; }
+      }
+    }
+  } catch (e) {
+    if (ctl.signal.aborted) throw { code: 'cancelled', message: 'annulé', text };
+    throw { code: 'network', message: 'coupure', text };
+  }
+  if (ctl.signal.aborted) throw { code: 'cancelled', message: 'annulé', text };
+  if (err) throw Object.assign(sbIaErreur(err), { text });
+  if (!fini || !stop) throw { code: 'network', message: 'réponse incomplète', text };
+  if (stop === 'refusal') throw { code: 'refused', message: 'refus', text };
+  return { text, truncated: stop === 'max_tokens' };
+}
+sbSample.json = async (input, o) => {
+  const r = await sbSample(input, Object.assign({}, o || {}, { json: true }));
+  const t = String(r.text || '').replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  const debut = t.indexOf('{'), fin = t.lastIndexOf('}');
+  try { return JSON.parse(debut >= 0 && fin > debut ? t.slice(debut, fin + 1) : t); } catch (e) { throw { code: 'invalid_json', message: 'réponse illisible', text: r.text }; }
+};
+window.claude = { use: async n => (n === 'db' ? sbDb : n === 'downloads' ? sbDownloads : n === 'sample' ? sbSample : null) };
 
 /* ===== Outils ===== */
 const $ = (sel, root) => (root || document).querySelector(sel);
@@ -1025,6 +1110,7 @@ function aiErrorText(e) {
       return 'AMELA ne peut pas rédiger sur mesure ici. Les modèles prêts à l’emploi restent accessibles.';
     case 'not_granted': return 'L’accès à AMELA a été refusé pour cette visite.';
     case 'rate_limited': return 'Trop de demandes pour l’instant. Réessaie dans quelques minutes.';
+    case 'daily_limit': return 'AMELA a atteint sa limite de réponses pour aujourd’hui. Elle revient demain ; les modèles prêts à l’emploi restent accessibles.';
     case 'session_expired': return 'Reconnecte-toi à Claude, puis réessaie.';
     case 'refused': return 'AMELA ne peut pas répondre à cette demande. Reformule-la.';
     case 'prompt_too_large': return 'Le texte est trop long. Raccourcis-le et réessaie.';
@@ -2446,6 +2532,7 @@ function bind() {
   window.addEventListener('hashchange', () => { const t = currentTab(); if (t !== UI.tab) { UI.tab = t; UI.sheet = null; renderSheet(); render(); } });
 }
 function boot() {
+  if (AUTONOME) sbIaActiver(true);
   plat.ready.then(async () => {
     await loadShared();
     refresh();
@@ -2454,6 +2541,7 @@ function boot() {
   }).catch(() => {});
 }
 function start() {
+  if (AUTONOME) ai.off = true; /* l'IA s'allume dès que le serveur confirme que la clé est branchée */
   loadLocal();
   UI.tab = currentTab();
   bind();
@@ -2461,8 +2549,8 @@ function start() {
   if (AUTONOME) {
     /* Hors de Claude : dès que la connexion revient, la sauvegarde en ligne reprend toute seule. */
     const retry = async () => { if (!cloud.on && !cloud.retry && remote.code && plat.db) { cloud.retry = true; try { if (await canWriteCloud()) startCloud(); } finally { cloud.retry = false; } } };
-    window.addEventListener('online', retry);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') retry(); });
+    window.addEventListener('online', () => { retry(); sbIaActiver(); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { retry(); sbIaActiver(); } });
     if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
     if (!remote.code) { sbGate(''); return; }
   }
