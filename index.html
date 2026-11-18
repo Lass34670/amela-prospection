@@ -18,7 +18,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* Mise en page : une colonne pensée pour le téléphone, cartes claires sur fond crème, onglets en bas.
+  /* Mise en page : sur téléphone une colonne et les onglets en bas ; sur ordinateur un menu vert à gauche
+     et le contenu sur toute la largeur, en deux colonnes. Cartes claires sur fond crème.
      Le « parcours » en quatre points dorés revient sur chaque prospect : c'est le fil de A à Z. */
   --bg: #F5F0EB;
   --surface: #FFFFFF;
@@ -55,7 +56,7 @@ ul, ol { padding: 0; list-style: none; }
 .top :focus-visible { outline-color: var(--brand-ink); }
 svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
-#app { position: relative; height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+#app { position: relative; height: 100%; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* En-tête */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: var(--brand-bg); color: var(--brand-ink); flex: none; }
@@ -102,7 +103,7 @@ h3 { font-size: 16px; font-weight: 600; line-height: 1.25; }
 .fab { position: absolute; right: 16px; bottom: 76px; z-index: 5; box-shadow: 0 6px 18px rgba(20, 30, 24, .28); border-radius: 999px; padding: 12px 18px; }
 
 /* Onglets */
-.tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); }
+.tabs { order: 1; flex: none; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); }
 .tabs a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 9px; font-size: 11.5px; color: var(--muted); text-decoration: none; border-top: 3px solid transparent; min-height: 58px; }
 .tabs a[aria-current="page"] { color: var(--primary); border-top-color: var(--gold); font-weight: 600; }
 .tabs a { position: relative; }
@@ -265,6 +266,70 @@ details.more[open] > summary { margin-bottom: 10px; }
 .gate-body { padding: 28px 18px; display: flex; flex-direction: column; gap: 14px; max-width: 460px; width: 100%; margin: 0 auto; }
 .gate-body input { font-size: 20px; letter-spacing: .08em; text-transform: uppercase; }
 
+/* Colonnes et grilles : empilées sur téléphone, côte à côte sur grand écran */
+.cols, .col, .toolbar { display: flex; flex-direction: column; gap: inherit; }
+.rgrid { display: flex; flex-direction: column; gap: inherit; }
+.cols > *, .col > *, .toolbar > *, .rgrid > * { flex-shrink: 0; }
+
+/* Tablette, petite fenêtre : toute la largeur, contenu centré */
+@media (min-width: 640px) {
+  #view { padding-left: max(24px, calc((100% - 720px) / 2)); padding-right: max(24px, calc((100% - 720px) / 2)); }
+  .sheet-body { padding-left: max(24px, calc((100% - 720px) / 2)); padding-right: max(24px, calc((100% - 720px) / 2)); }
+  .dialog { max-width: 640px; }
+  #plist, .rgrid, .menu.stack { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  #plist > :not(.pcard) { grid-column: 1 / -1; }
+  .rgrid.wide { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 14px; }
+}
+
+/* Ordinateur : menu vert à gauche, contenu sur toute la largeur */
+@media (min-width: 900px) {
+  #app { display: grid; grid-template-columns: 232px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  #app > .top { grid-column: 1; grid-row: 1; flex-direction: column; align-items: flex-start; gap: 16px; padding: 28px 22px 20px; }
+  #app > .top .brand { flex-direction: column; align-items: flex-start; gap: 3px; }
+  #app > .top .brand-name { font-size: 30px; }
+  #app > .tabs { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 4px; padding: 6px 12px 24px; background: var(--brand-bg); border-top: 0; }
+  .tabs a { flex-direction: row; gap: 12px; min-height: 46px; padding: 10px 14px; border-top: 0; border-radius: 10px; font-size: 15px; color: rgba(245, 240, 235, .82); }
+  .tabs a:hover { background: rgba(245, 240, 235, .1); color: var(--brand-ink); }
+  .tabs a[aria-current="page"] { background: var(--bg); color: var(--primary); }
+  .tabs a:focus-visible { outline-color: var(--brand-ink); }
+  .tabs .badge { position: static; margin-left: auto; }
+  #view { grid-column: 2; grid-row: 1 / -1; min-height: 0; padding: 36px max(40px, calc((100% - 1160px) / 2)) 48px; gap: 24px; }
+  .sheet { grid-column: 2; grid-row: 1 / -1; position: relative; inset: auto; min-height: 0; }
+  .sheet-head { background: var(--bg); color: var(--primary); border-bottom: 1px solid var(--line); padding: 12px max(32px, calc((100% - 1176px) / 2)); }
+  .sheet-head .back { color: var(--primary); }
+  .sheet-head .ttl { font-size: 26px; }
+  .sheet-body { padding: 28px max(40px, calc((100% - 1160px) / 2)) 48px; gap: 18px; }
+  #sheet[data-type="aide"] .sheet-body { padding-left: max(40px, calc((100% - 760px) / 2)); padding-right: max(40px, calc((100% - 760px) / 2)); }
+  h1 { font-size: 40px; }
+  .card { padding: 18px; }
+  .chips { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+  .toolbar { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+  .toolbar .field { flex: 0 1 340px; }
+  .toolbar .chips { flex: 1 1 360px; }
+  .menu a, .menu button { min-height: 86px; padding: 18px; }
+  .dialog-wrap { align-items: center; padding: 32px; }
+  .dialog { max-width: 600px; max-height: 100%; border-radius: 18px; padding: 24px 24px 22px; box-shadow: 0 24px 60px rgba(20, 30, 24, .28); }
+  .toast { left: 248px; right: 16px; bottom: 28px; }
+  .fab { right: 32px; bottom: 28px; }
+  .gate-body { margin: 9vh auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 32px; }
+}
+
+/* Grand écran : deux colonnes côte à côte */
+@media (min-width: 1240px) {
+  .cols { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .cols > .col { gap: 24px; }
+  .sheet .cols > .col { gap: 18px; }
+  .cols.assist { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); }
+  .cols.assist > .col:first-child { position: sticky; top: 24px; }
+}
+
+/* À la souris */
+@media (hover: hover) {
+  .task:hover, .pcard:hover, .menu a:hover, .menu button:hover, .links a:hover, .chip:hover { border-color: var(--gold); }
+  .btn:not([disabled]):hover { filter: brightness(1.1); }
+  .btn.ghost:not([disabled]):hover, .btn.danger:not([disabled]):hover { background: var(--surface); filter: none; }
+}
+
 </style>
 </head>
 <body>
@@ -273,7 +338,6 @@ details.more[open] > summary { margin-bottom: 10px; }
     <div class="brand"><span class="brand-name">AMELA</span><span class="brand-sub">Prospection</span></div>
     <button type="button" class="sync" id="syncChip" data-action="sync-info" aria-label="Où sont enregistrées mes données"><span class="dot"></span><span>Sur cet appareil</span></button>
   </header>
-  <main id="view" tabindex="-1"></main>
   <nav class="tabs" aria-label="Rubriques">
     <a href="#accueil" data-action="tab" data-tab="accueil"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.500h9M4 12h9M4 17.500h6"/><path d="m15.500 16.500 2 2 3.500-4"/></svg><span class="lab">Aujourd’hui</span><span class="badge" hidden></span></a>
     <a href="#prospects" data-action="tab" data-tab="prospects"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.200"/><path d="M3 19c.600-3.300 3-5 6-5s5.400 1.700 6 5"/><path d="M16 5.200a3 3 0 0 1 0 5.600M18 14.300c1.700.700 2.700 2.200 3 4.700"/></svg><span class="lab">Prospects</span></a>
@@ -281,6 +345,7 @@ details.more[open] > summary { margin-bottom: 10px; }
     <a href="#assistante" data-action="tab" data-tab="assistante"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4.500 3.500V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><span class="lab">AMELA</span></a>
     <a href="#outils" data-action="tab" data-tab="outils"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.500" height="6.500" rx="1.200"/><rect x="13.500" y="4" width="6.500" height="6.500" rx="1.200"/><rect x="4" y="13.500" width="6.500" height="6.500" rx="1.200"/><rect x="13.500" y="13.500" width="6.500" height="6.500" rx="1.200"/></svg><span class="lab">Outils</span></a>
   </nav>
+  <main id="view" tabindex="-1"></main>
   <section id="sheet" class="sheet" hidden></section>
   <div id="dialog" class="dialog-wrap" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -1195,6 +1260,10 @@ const IC = {
   spark: '<path d="M12 4l1.800 4.700L18.500 10.500l-4.700 1.800L12 17l-1.800-4.700L5.500 10.500l4.700-1.800z"/><path d="M18.500 16.500v3M17 18h3"/>'
 };
 const ic = n => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + IC[n] + '</svg>';
+/* Deux colonnes sur grand écran ; sur téléphone elles s'empilent dans le même ordre. */
+const cols = (a, b, cls) => (String(a || '').trim() && String(b || '').trim())
+  ? `<div class="cols${cls ? ' ' + cls : ''}"><div class="col">${a}</div><div class="col">${b}</div></div>`
+  : `<div class="col">${a || ''}${b || ''}</div>`;
 
 let toastTimer = 0;
 function toast(msg) {
@@ -1324,38 +1393,38 @@ function viewAccueil() {
   else if (!due.length) lede = 'Rien d’urgent aujourd’hui. Profites-en pour ouvrir de nouveaux contacts.';
   else lede = due.length === 1 ? 'Une action t’attend aujourd’hui.' : due.length + ' actions t’attendent aujourd’hui.';
   let h = `<header class="stack"><p class="eyebrow">${esc(cap(F_LONG.format(new Date())))}</p><h1>Bonjour${name}</h1><p class="lede">${lede}</p></header>`;
-  h += welcomeCard() + storageWarning() + migrationCard() + onboardingCard();
+  let m = welcomeCard() + storageWarning() + migrationCard() + onboardingCard();
 
   if (due.length || fresh.length || noplan.length) {
-    h += `<section class="sec"><div class="sec-head"><h2>À faire aujourd’hui</h2><span class="count">${due.length} action${due.length > 1 ? 's' : ''}</span></div>`;
-    h += due.map(taskRow).join('');
-    if (!due.length) h += '<p class="muted">Aucune relance prévue aujourd’hui.</p>';
-    if (fresh.length) h += '<p class="small muted">Nouveaux prospects à lancer</p>' + fresh.map(taskRow).join('');
-    if (noplan.length) h += '<p class="small muted">Sans suite prévue : choisis la prochaine action</p>' + noplan.map(taskRow).join('');
-    h += '</section>';
+    m += `<section class="sec"><div class="sec-head"><h2>À faire aujourd’hui</h2><span class="count">${due.length} action${due.length > 1 ? 's' : ''}</span></div>`;
+    m += due.map(taskRow).join('');
+    if (!due.length) m += '<p class="muted">Aucune relance prévue aujourd’hui.</p>';
+    if (fresh.length) m += '<p class="small muted">Nouveaux prospects à lancer</p>' + fresh.map(taskRow).join('');
+    if (noplan.length) m += '<p class="small muted">Sans suite prévue : choisis la prochaine action</p>' + noplan.map(taskRow).join('');
+    m += '</section>';
   }
 
   const recos = openRecos().slice(0, 3);
   if (recos.length && (count() < 5 || !due.length)) {
-    h += `<section class="sec"><div class="sec-head"><h2>L’agent te propose</h2><button type="button" class="linkbtn" data-action="tab" data-tab="agent">Tout voir</button></div>${recos.map(x => recoCard(x, true)).join('')}</section>`;
+    m += `<section class="sec"><div class="sec-head"><h2>L’agent te propose</h2><button type="button" class="linkbtn" data-action="tab" data-tab="agent">Tout voir</button></div>${recos.map(x => recoCard(x, true)).join('')}</section>`;
   }
 
   const pc = Math.min(100, Math.round(ws.contacts / obj * 100));
-  h += `<section class="sec"><h2>Cette semaine</h2>
+  let s = `<section class="sec"><h2>Cette semaine</h2>
     <div class="card"><div class="row between"><span>Nouveaux contacts</span><strong>${ws.contacts} sur ${obj}</strong></div><div class="bar" role="img" aria-label="${ws.contacts} nouveaux contacts sur ${obj}"><span style="width:${pc}%"></span></div>
     <p class="small muted">${ws.echanges} échange${ws.echanges > 1 ? 's' : ''} noté${ws.echanges > 1 ? 's' : ''} · ${ws.rdv} rendez-vous</p></div></section>`;
 
   const counts = {};
   allProspects().forEach(p => { counts[p.stage] = (counts[p.stage] || 0) + 1; });
-  h += `<section class="sec"><h2>Ton parcours</h2><div class="card"><div class="funnel">${STAGES.map(s => `<button type="button" data-action="filter-go" data-f="${s.id}"><span class="n${counts[s.id] ? '' : ' zero'}">${counts[s.id] || 0}</span><span class="l">${esc(s.label)}</span></button>`).join('')}</div></div></section>`;
+  s += `<section class="sec"><h2>Ton parcours</h2><div class="card"><div class="funnel">${STAGES.map(s => `<button type="button" data-action="filter-go" data-f="${s.id}"><span class="n${counts[s.id] ? '' : ' zero'}">${counts[s.id] || 0}</span><span class="l">${esc(s.label)}</span></button>`).join('')}</div></div></section>`;
 
-  h += `<section class="sec"><div class="sec-head"><h2>Tes commissions</h2><button type="button" class="linkbtn" data-action="sheet" data-type="commissions">Détail</button></div>
+  s += `<section class="sec"><div class="sec-head"><h2>Tes commissions</h2><button type="button" class="linkbtn" data-action="sheet" data-type="commissions">Détail</button></div>
     <div class="kpis"><div class="kpi"><div class="n">${fmtEur(ct.gagne)}</div><div class="l">à recevoir</div></div><div class="kpi"><div class="n">${fmtEur(ct.avenir)}</div><div class="l">à venir</div></div><div class="kpi"><div class="n">${fmtEur(ct.recu)}</div><div class="l">déjà reçu</div></div></div></section>`;
 
   if (!cloud.on && count() && S.meta.changes > 0 && (!S.meta.lastBackup || diffDays(todayISO(), S.meta.lastBackup) >= 7)) {
-    h += `<section class="card soft"><h3>Pense à ta sauvegarde</h3><p class="small">Tes prospects sont enregistrés sur cet appareil seulement. ${S.meta.lastBackup ? 'Dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) + '.' : 'Aucune sauvegarde pour l’instant.'}</p><div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button></div></section>`;
+    s += `<section class="card soft"><h3>Pense à ta sauvegarde</h3><p class="small">Tes prospects sont enregistrés sur cet appareil seulement. ${S.meta.lastBackup ? 'Dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) + '.' : 'Aucune sauvegarde pour l’instant.'}</p><div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button></div></section>`;
   }
-  return h;
+  return h + cols(m, s);
 }
 
 /* ===== Prospects ===== */
@@ -1381,8 +1450,8 @@ function viewProspects() {
   const chips = [['tous', 'En cours']].concat(STAGES.map(s => [s.id, s.label]), [['perdu', 'Perdus']])
     .map(c => `<button type="button" class="chip" data-action="filter" data-f="${c[0]}" aria-pressed="${UI.filter === c[0]}">${esc(c[1])} ${counts[c[0]] || 0}</button>`).join('');
   return `<header class="stack"><h1>Mes prospects</h1><p class="lede">Chaque prospect avance sur quatre étapes, du premier appel au premier chantier.</p></header>
-    <div class="field"><label for="q">Rechercher</label><input type="search" id="q" value="${esc(UI.q)}" placeholder="Nom, ville ou contact" autocomplete="off"></div>
-    <div class="chips" role="group" aria-label="Filtrer par étape">${chips}</div>
+    <div class="toolbar"><div class="field"><label for="q">Rechercher</label><input type="search" id="q" value="${esc(UI.q)}" placeholder="Nom, ville ou contact" autocomplete="off"></div>
+    <div class="chips" role="group" aria-label="Filtrer par étape">${chips}</div></div>
     <div id="plist" class="stack">${prospectList()}</div>
     <div style="height:56px"></div>
     <button type="button" class="btn fab" data-action="add">${ic('plus')}Ajouter</button>`;
@@ -1422,24 +1491,24 @@ function viewAgent() {
   const chips = [['tous', 'Tous']].concat(nNeufs ? [['neufs', 'Nouveaux ' + nNeufs]] : [], [['A', 'Notés A'], ['indep', 'Indépendantes'], ['tel', 'Avec téléphone']])
     .map(c => `<button type="button" class="chip" data-action="reco-filter" data-f="${c[0]}" aria-pressed="${UI.recoFilter === c[0]}">${c[1]}</button>`).join('');
   let h = `<header class="stack"><h1>L’agent commercial</h1><p class="lede">Il te dit qui appeler en premier et te propose des entreprises qui confient souvent des travaux.</p></header>`;
-  h += `<section class="sec"><h2>Ce que l’agent remarque</h2><div class="card">${ins.map((x, i) => `<div class="insight"><span class="num">${i + 1}</span><span class="grow">${esc(x.t)}${x.id ? ` <button type="button" class="linkbtn" data-action="open" data-id="${esc(x.id)}">Ouvrir</button>` : ''}</span></div>`).join('')}
+  let m = `<section class="sec"><h2>Ce que l’agent remarque</h2><div class="card">${ins.map((x, i) => `<div class="insight"><span class="num">${i + 1}</span><span class="grow">${esc(x.t)}${x.id ? ` <button type="button" class="linkbtn" data-action="open" data-id="${esc(x.id)}">Ouvrir</button>` : ''}</span></div>`).join('')}
     ${count() ? (aiUsable() ? `<div class="row"><button type="button" class="btn ghost sm" data-action="advice"${UI.adviceBusy ? ' disabled' : ''}>${ic('spark')}Demander un plan pour la semaine</button>${UI.adviceBusy ? '<button type="button" class="btn ghost sm" data-action="ai-stop">Arrêter</button>' : ''}</div>` : `<div class="row"><button type="button" class="btn ghost sm" data-action="bridge-advice">${ic('spark')}Plan de la semaine avec une IA</button></div>`) : ''}
     ${UI.advice || UI.adviceBusy ? `<div class="aiout" id="agent-out">${esc(UI.advice || 'L’agent réfléchit…')}</div>` : ''}</div></section>`;
-  h += `<section class="sec"><div class="sec-head"><h2>Recommandés pour toi</h2><span class="count">${recos.length} à voir</span></div>
+  m += `<section class="sec"><div class="sec-head"><h2>Recommandés pour toi</h2><span class="count">${recos.length} à voir</span></div>
     <p class="small muted">Chaque fiche a été vérifiée sur la source indiquée. Vérifie quand même le numéro avant d’appeler.</p>
     <div class="chips" role="group" aria-label="Filtrer les recommandations">${chips}</div>
-    ${shown.length ? shown.map(x => recoCard(x)).join('') : '<p class="muted">Tu as vu toutes les recommandations de cette liste. Cherche-en d’autres juste en dessous, ou demande à Lass d’en faire ajouter.</p>'}
+    ${shown.length ? '<div class="rgrid">' + shown.map(x => recoCard(x)).join('') + '</div>' : '<p class="muted">Tu as vu toutes les recommandations de cette liste. Cherche-en d’autres juste en dessous, ou demande à Lass d’en faire ajouter.</p>'}
     ${list.length > shown.length ? `<button type="button" class="btn ghost" data-action="reco-more">Voir les ${list.length - shown.length} autres</button>` : ''}</section>`;
-  h += `<section class="sec"><h2>En trouver d’autres</h2><div class="card">
+  let s = `<section class="sec"><h2>En trouver d’autres</h2><div class="card">
     <p>Cherche sur Google Maps, puis ajoute ceux qui t’intéressent.</p>
     <div class="field"><label for="commune">Dans quelle ville ?</label><select id="commune">${COMMUNES.map(c => `<option${c === UI.commune ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
     <div class="links" id="slinks">${searchLinks()}</div>
     <div class="row">${aiUsable() ? `<button type="button" class="btn sm" data-action="coller">${ic('spark')}Coller une fiche trouvée</button>` : ''}<button type="button" class="btn ghost sm" data-action="add">Ajouter à la main</button></div></div></section>`;
-  h += `<section class="sec"><h2>Qui viser</h2><div class="card">${SEGMENTS.map(s => `<div><h3>${esc(s[0])}</h3><p class="small muted">${esc(s[1])}</p></div>`).join('')}
+  s += `<section class="sec"><h2>Qui viser</h2><div class="card">${SEGMENTS.map(s => `<div><h3>${esc(s[0])}</h3><p class="small muted">${esc(s[1])}</p></div>`).join('')}
     <div class="notice"><strong>À éviter :</strong> les entreprises qui ont déjà leur société de travaux, et celles qui disent ne pas vouloir être démarchées. Note-le dans la fiche et n’insiste pas.</div>
     <div class="notice warn"><strong>Jamais de démarchage de particuliers.</strong> Appeler un particulier pour lui proposer des travaux sans son accord est interdit depuis le 11 août 2026. Tu prospectes des professionnels ; pour un particulier, attends qu’il te le demande.</div></div></section>`;
-  h += `<section class="sec"><h2>Comment l’agent note</h2><div class="card small"><p>La note va de 0 à 100. Elle monte quand l’entreprise a souvent des travaux à confier (gestion locative, logements étudiants, beaucoup de logements gérés), quand la décision se prend sur place, et quand tu connais ton contact.</p><p><span class="grade A">A</span> à partir de 70 : à appeler en premier. <span class="grade B">B</span> de 50 à 69. <span class="grade C">C</span> en dessous.</p></div></section>`;
-  return h;
+  s += `<section class="sec"><h2>Comment l’agent note</h2><div class="card small"><p>La note va de 0 à 100. Elle monte quand l’entreprise a souvent des travaux à confier (gestion locative, logements étudiants, beaucoup de logements gérés), quand la décision se prend sur place, et quand tu connais ton contact.</p><p><span class="grade A">A</span> à partir de 70 : à appeler en premier. <span class="grade B">B</span> de 50 à 69. <span class="grade C">C</span> en dessous.</p></div></section>`;
+  return h + cols(m, s);
 }
 
 /* ===== Assistante ===== */
@@ -1539,14 +1608,15 @@ function scrollChat() { const v = $('#view'); if (v && S.chat.length) v.scrollTo
 function viewAssistante() {
   const usable = aiUsable();
   const opts = '<option value="">Aucun en particulier</option>' + liveProspects().sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(p => `<option value="${esc(p.id)}"${p.id === UI.ctx ? ' selected' : ''}>${esc(p.nom)}</option>`).join('');
-  return `<header class="stack"><h1>AMELA</h1><p class="lede">Ton assistante. Elle écrit tes messages, prépare tes appels et tes rendez-vous. Choisis une action, ou pose ta question.</p></header>
-    ${usable ? '' : '<div class="notice">Ici, AMELA te donne des modèles prêts à copier. Pour un texte écrit exprès pour ton prospect, touche « Sur mesure avec une IA » sous la réponse.</div>'}
+  const head = `<header class="stack"><h1>AMELA</h1><p class="lede">Ton assistante. Elle écrit tes messages, prépare tes appels et tes rendez-vous. Choisis une action, ou pose ta question.</p></header>`;
+  const tools = `${usable ? '' : '<div class="notice">Ici, AMELA te donne des modèles prêts à copier. Pour un texte écrit exprès pour ton prospect, touche « Sur mesure avec une IA » sous la réponse.</div>'}
     <div class="field"><label for="ctx">Pour quel prospect ?</label><select id="ctx">${opts}</select></div>
-    <div class="quick">${QUICK.map(q => `<button type="button" class="btn ghost" data-action="quick" data-q="${q.id}">${esc(q.label)}</button>`).join('')}</div>
-    <div class="chat" id="chat" aria-live="polite">${chatHTML()}</div>
+    <div class="quick">${QUICK.map(q => `<button type="button" class="btn ghost" data-action="quick" data-q="${q.id}">${esc(q.label)}</button>`).join('')}</div>`;
+  const talk = `<div class="chat" id="chat" aria-live="polite">${chatHTML()}</div>
     <form class="composer" data-form="chat"><div class="grow"><label class="small muted" for="chat-in">Ta question</label><textarea id="chat-in" name="q" rows="2" placeholder="Exemple : comment me présenter à un syndic ?"></textarea></div><button class="btn" type="submit"${UI.chatBusy ? ' disabled' : ''}>${usable ? 'Envoyer' : 'Préparer'}</button></form>
     ${usable ? '' : '<p class="small muted">Ta question sera préparée pour une IA (Claude, ChatGPT ou une autre), avec tout ce qu’il faut savoir sur AMELA CONCEPT.</p>'}
     ${S.chat.length ? '<div><button type="button" class="linkbtn" data-action="chat-clear">Effacer la conversation</button></div>' : ''}`;
+  return head + cols(tools, talk, 'assist');
 }
 function runQuick(id, pid) {
   const q = QUICK.find(x => x.id === id);
@@ -1657,6 +1727,7 @@ function renderSheet() {
   const out = (map[UI.sheet.type] || sheetAide)(UI.sheet.id);
   if (!out) { UI.sheet = null; el.hidden = true; el.innerHTML = ''; return; }
   setHTML(el, `<div class="sheet-head"><button type="button" class="back" data-action="close-sheet">${ic('back')}Retour</button><span class="ttl">${esc(out.title)}</span></div><div class="sheet-body">${out.html}</div>`);
+  el.dataset.type = UI.sheet.type;
   el.hidden = false;
   const sc2 = $('#sheet .sheet-body');
   if (sc2) sc2.scrollTop = top;
@@ -1714,6 +1785,7 @@ function sheetProspect(id) {
     ${UI.avisBusy === p.id ? `<div class="aiout" id="avis-out">${esc(UI.avisStream || 'L’agent réfléchit…')}</div><div><button type="button" class="linkbtn" data-action="ai-stop">Arrêter</button></div>` : (p.avis && p.avis.text ? `<div class="aiout">${esc(p.avis.text)}</div><p class="small muted">Avis du ${esc(fmtStamp(p.avis.t))}</p>` : '')}
     ${q.blocked || UI.avisBusy === p.id ? '' : (aiUsable() ? `<div class="row"><button type="button" class="btn ghost sm" data-action="avis" data-id="${pid}">${ic('spark')}${p.avis ? 'Redemander son avis' : 'Demander son avis'}</button></div>` : `<div class="row"><button type="button" class="btn ghost sm" data-action="bridge-avis" data-id="${pid}">${ic('spark')}Avis d’une IA sur ce prospect</button></div>`)}</section>`;
 
+  const colA = h; h = '';
   h += `<section class="card"><div class="row between"><h3>Les trois questions</h3><button type="button" class="linkbtn" data-action="questions" data-id="${pid}">${p.q1 || p.q2 || p.q3 ? 'Modifier' : 'Noter les réponses'}</button></div>
     <ol class="numbered">${AMELA.questions.map((qq, k) => `<li>${esc(qq)}${p['q' + (k + 1)] ? `<br><strong>${esc(p['q' + (k + 1)])}</strong>` : ''}</li>`).join('')}</ol></section>`;
 
@@ -1730,40 +1802,41 @@ function sheetProspect(id) {
   const log = p.log || [];
   h += `<section class="card"><h3>Historique</h3>${log.length ? `<ul class="log">${log.slice(0, 40).map(l => `<li><span class="when">${esc(fmtStamp(l.t))} · ${esc(KINDS[l.kind] || 'Note')}</span><span class="txt">${esc(l.text || '')}</span></li>`).join('')}</ul>` : '<p class="muted small">Rien pour l’instant. Note chaque appel, passage ou message : tu sauras toujours où tu en es.</p>'}</section>`;
 
+  h = cols(colA, h);
   h += `<div class="row">${p.stage !== 'perdu' ? `<button type="button" class="btn ghost sm" data-action="perdu" data-id="${pid}">Perdu ou plus tard</button>` : ''}<button type="button" class="btn danger sm" data-action="delete" data-id="${pid}">Supprimer</button></div>`;
   return { title: p.nom, html: h };
 }
 function sheetGuide() {
-  const h = `<p class="quote" style="font-style:normal">${esc(AMELA.phrase)}</p>
+  const a = `<p class="quote" style="font-style:normal">${esc(AMELA.phrase)}</p>
     <section class="sec"><h2>L’entreprise</h2><div class="card"><dl class="kv">${AMELA.fiche.map(f => `<dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd>`).join('')}</dl></div></section>
     <section class="sec"><h2>Ce qu’elle fait</h2><div class="card"><ul class="why">${AMELA.travaux.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p class="small muted">${esc(AMELA.pasFait)}</p></div></section>
     <section class="sec"><h2>Ses trois points forts</h2><div class="card"><ol class="numbered">${AMELA.atouts.map(x => `<li><strong>${esc(x[0])}</strong> : ${esc(x[1])}</li>`).join('')}</ol></div></section>
-    <section class="sec"><h2>Combien de temps durent les travaux</h2><div class="card"><table class="tbl"><tbody>${AMELA.durees.map(x => `<tr><td>${esc(x[0])}</td><td class="n"><strong>${esc(x[1])}</strong></td></tr>`).join('')}</tbody></table><p class="small muted">${esc(AMELA.dureesNote)}</p></div></section>
-    <section class="sec"><h2>Te présenter, en 20 secondes</h2><p class="quote" id="t-accroche">« ${esc(AMELA.accroche)} »</p><div><button type="button" class="btn ghost sm" data-action="copy-el" data-el="t-accroche">Copier</button></div></section>
+    <section class="sec"><h2>Combien de temps durent les travaux</h2><div class="card"><table class="tbl"><tbody>${AMELA.durees.map(x => `<tr><td>${esc(x[0])}</td><td class="n"><strong>${esc(x[1])}</strong></td></tr>`).join('')}</tbody></table><p class="small muted">${esc(AMELA.dureesNote)}</p></div></section>`;
+  const b = `<section class="sec"><h2>Te présenter, en 20 secondes</h2><p class="quote" id="t-accroche">« ${esc(AMELA.accroche)} »</p><div><button type="button" class="btn ghost sm" data-action="copy-el" data-el="t-accroche">Copier</button></div></section>
     <section class="sec"><h2>Trois questions à poser</h2><div class="card"><ol class="numbered">${AMELA.questions.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div></section>
     <section class="sec"><h2>Si on te dit…</h2>${AMELA.objections.map(o => `<div class="card"><h3>« ${esc(o[0])} »</h3><p>${esc(o[1])}</p></div>`).join('')}</section>
     <section class="sec"><h2>Ton rôle</h2><div class="card"><p>${esc(AMELA.role)}</p></div></section>`;
-  return { title: 'AMELA CONCEPT en bref', html: h };
+  return { title: 'AMELA CONCEPT en bref', html: cols(a, b) };
 }
 function sheetCommissions() {
   const ct = commissionTotals();
   const ex = [1000, 5000, 10000, 20000, 50000];
-  const h = `<div class="kpis"><div class="kpi"><div class="n">${fmtEur(ct.gagne)}</div><div class="l">à recevoir</div></div><div class="kpi"><div class="n">${fmtEur(ct.avenir)}</div><div class="l">à venir</div></div><div class="kpi"><div class="n">${fmtEur(ct.recu)}</div><div class="l">déjà reçu</div></div></div>
-    <section class="sec"><h2>Le barème</h2><div class="card"><p>Ta commission dépend du montant HT du chantier. Plus le chantier est gros, plus le pourcentage baisse.</p>
+  const k = `<div class="kpis"><div class="kpi"><div class="n">${fmtEur(ct.gagne)}</div><div class="l">à recevoir</div></div><div class="kpi"><div class="n">${fmtEur(ct.avenir)}</div><div class="l">à venir</div></div><div class="kpi"><div class="n">${fmtEur(ct.recu)}</div><div class="l">déjà reçu</div></div></div>`;
+  const a = `<section class="sec"><h2>Le barème</h2><div class="card"><p>Ta commission dépend du montant HT du chantier. Plus le chantier est gros, plus le pourcentage baisse.</p>
       <table class="tbl"><thead><tr><th>Montant du chantier HT</th><th class="n">Commission</th></tr></thead><tbody>${baremeRows().map(r => `<tr><td>${esc(r[0])}</td><td class="n"><strong>${esc(r[1])}</strong></td></tr>`).join('')}</tbody></table>
       <p class="small muted">Chaque taux s’applique à la part du chantier située dans sa tranche. La commission est versée en fin de mois, une fois la facture payée par le client.</p></div></section>
     <section class="sec"><h2>Calcul rapide</h2><div class="card"><div class="field"><label for="calc">Montant du chantier HT, en euros</label><input type="number" id="calc" inputmode="decimal" min="0" step="1" placeholder="Exemple : 2050"></div><p>Ta commission : <strong class="bignum" id="calc-out">0 €</strong></p>
-      <table class="tbl"><thead><tr><th>Exemples</th><th class="n">Commission</th></tr></thead><tbody>${ex.map(m => `<tr><td>${fmtEur(m)}</td><td class="n">${fmtEur(commission(m))}</td></tr>`).join('')}</tbody></table></div></section>
-    <section class="sec"><h2>Tes chantiers</h2>${ct.rows.length ? `<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client et chantier</th><th class="n">Montant HT</th><th class="n">Commission</th></tr></thead><tbody>${ct.rows.map(r => `<tr><td><button type="button" class="linkbtn" data-action="open" data-id="${esc(r.p.id)}">${esc(r.p.nom)}</button><br><span class="small muted">${esc(r.ch.label || 'Chantier')} · ${esc(CH_STATUTS[r.ch.statut] || '')}</span></td><td class="n">${fmtEur(r.ch.montant)}</td><td class="n"><strong>${fmtEur(r.c)}</strong></td></tr>`).join('')}</tbody></table></div></div>` : '<p class="muted">Aucun chantier noté. Ouvre la fiche d’un client pour en ajouter un.</p>'}</section>`;
-  return { title: 'Mes commissions', html: h };
+      <table class="tbl"><thead><tr><th>Exemples</th><th class="n">Commission</th></tr></thead><tbody>${ex.map(m => `<tr><td>${fmtEur(m)}</td><td class="n">${fmtEur(commission(m))}</td></tr>`).join('')}</tbody></table></div></section>`;
+  const b = `<section class="sec"><h2>Tes chantiers</h2>${ct.rows.length ? `<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client et chantier</th><th class="n">Montant HT</th><th class="n">Commission</th></tr></thead><tbody>${ct.rows.map(r => `<tr><td><button type="button" class="linkbtn" data-action="open" data-id="${esc(r.p.id)}">${esc(r.p.nom)}</button><br><span class="small muted">${esc(r.ch.label || 'Chantier')} · ${esc(CH_STATUTS[r.ch.statut] || '')}</span></td><td class="n">${fmtEur(r.ch.montant)}</td><td class="n"><strong>${fmtEur(r.c)}</strong></td></tr>`).join('')}</tbody></table></div></div>` : '<p class="muted">Aucun chantier noté. Ouvre la fiche d’un client pour en ajouter un.</p>'}</section>`;
+  return { title: 'Mes commissions', html: k + cols(a, b) };
 }
 function sheetModeles() {
   const blocs = [['Premier message', TPL.premier(null)], ['Script d’appel', TPL.appel(null)], ['Préparer un rendez-vous', TPL.rdv(null)], ['Relance', TPL.relance(null)]];
-  const h = `<p class="lede">Des textes prêts à copier. ${aiUsable() ? 'Pour un texte adapté à un prospect précis, demande à AMELA.' : ''}</p>` + blocs.map((b, i) => `<section class="card"><div class="row between"><h3>${esc(b[0])}</h3><button type="button" class="btn ghost sm" data-action="copy-el" data-el="tpl-${i}">Copier</button></div><div class="aiout" id="tpl-${i}">${esc(b[1])}</div></section>`).join('');
+  const h = `<p class="lede">Des textes prêts à copier. ${aiUsable() ? 'Pour un texte adapté à un prospect précis, demande à AMELA.' : ''}</p>` + '<div class="rgrid wide">' + blocs.map((b, i) => `<section class="card"><div class="row between"><h3>${esc(b[0])}</h3><button type="button" class="btn ghost sm" data-action="copy-el" data-el="tpl-${i}">Copier</button></div><div class="aiout" id="tpl-${i}">${esc(b[1])}</div></section>`).join('') + '</div>';
   return { title: 'Modèles de messages', html: h };
 }
 function sheetLexique() {
-  return { title: 'Lexique', html: LEXIQUE.map(l => `<div class="card"><h3>${esc(l[0])}</h3><p>${esc(l[1])}</p></div>`).join('') };
+  return { title: 'Lexique', html: '<div class="rgrid">' + LEXIQUE.map(l => `<div class="card"><h3>${esc(l[0])}</h3><p>${esc(l[1])}</p></div>`).join('') + '</div>' };
 }
 function sheetAide() {
   const pts = [
@@ -1779,19 +1852,19 @@ function sheetAide() {
 }
 function sheetReglages() {
   const s = S.settings;
-  const h = `<form class="stack" data-form="settings">
+  const a = `<form class="stack" data-form="settings">
     <div class="field"><label for="s-prenom">Ton prénom</label><input type="text" id="s-prenom" name="prenom" value="${esc(S.profile.prenom)}" maxlength="40" autocomplete="given-name"></div>
     <div class="field"><label for="s-obj">Objectif de nouveaux contacts par semaine</label><input type="number" id="s-obj" name="objectif" min="1" max="200" step="1" value="${esc(s.objectif)}" inputmode="numeric"></div>
     <div class="field"><label for="s-lass">Numéro WhatsApp de Lass</label><input type="tel" id="s-lass" name="lassTel" value="${esc(s.lassTel || CONFIG.lassTel || '')}" placeholder="06 00 00 00 00" autocomplete="off"><span class="help">Il sert à ouvrir WhatsApp sur la bonne conversation quand tu transmets un contact.</span></div>
     <div class="field"><label for="s-clients">Entreprises déjà clientes d’AMELA CONCEPT</label><textarea id="s-clients" name="clients" rows="3" placeholder="Un nom par ligne">${esc(s.clients)}</textarea><span class="help">Demande la liste à Lass. Ces contacts ne comptent pas comme un apport : l’outil te prévient.</span></div>
-    <div class="row"><button class="btn" type="submit">Enregistrer</button></div></form>
-    <section class="sec"><h2>Tes données</h2><div class="card"><p>${cloud.on ? 'Elles sont enregistrées en ligne : tu les retrouves sur tous tes appareils.' : 'Elles sont enregistrées sur cet appareil, dans ce navigateur. Ouvre toujours l’outil au même endroit, et fais une sauvegarde chaque semaine.'}</p>
+    <div class="row"><button class="btn" type="submit">Enregistrer</button></div></form>`;
+  const b = `<section class="sec"><h2>Tes données</h2><div class="card"><p>${cloud.on ? 'Elles sont enregistrées en ligne : tu les retrouves sur tous tes appareils.' : 'Elles sont enregistrées sur cet appareil, dans ce navigateur. Ouvre toujours l’outil au même endroit, et fais une sauvegarde chaque semaine.'}</p>
       <div class="row"><button type="button" class="btn sm" data-action="backup">Faire une sauvegarde</button><button type="button" class="btn ghost sm" data-action="restore">Restaurer une sauvegarde</button><button type="button" class="btn ghost sm" data-action="csv">Exporter en tableau</button></div>
       ${!cloud.on && plat.db ? '<div><button type="button" class="linkbtn" data-action="cloud-test">Essayer la sauvegarde en ligne</button></div>' : ''}
       <p class="small muted">${count()} prospect${count() > 1 ? 's' : ''} · ${S.meta.lastBackup ? 'dernière sauvegarde ' + esc(relDay(S.meta.lastBackup)) : 'aucune sauvegarde pour l’instant'}</p></div></section>
     ${AUTONOME ? `<section class="sec"><h2>Cet appareil</h2><div class="card"><p class="small">Ton code d’accès est enregistré sur cet appareil : ${esc(codeJoli(remote.code).replace(/[A-Z0-9](?=.{5})/g, '•'))}</p><div class="row"><button type="button" class="btn ghost sm" data-action="signout">Se déconnecter de cet appareil</button></div></div></section>` : ''}
     <section class="sec"><h2>Repartir de zéro</h2><div class="card"><p class="small">${cloud.on ? 'Efface tous les prospects, les échanges et les réglages, sur cet appareil et en ligne. Lass ne les verra plus non plus.' : 'Efface tous les prospects, les échanges et les réglages de cet appareil.'}</p><div class="row"><button type="button" class="btn danger sm" data-action="wipe">Tout effacer</button></div></div></section>`;
-  return { title: 'Réglages et sauvegarde', html: h };
+  return { title: 'Réglages et sauvegarde', html: cols(a, b) };
 }
 
 /* ===== Fenêtres ===== */
